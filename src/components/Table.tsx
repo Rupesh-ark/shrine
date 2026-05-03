@@ -9,7 +9,7 @@ const TABLE_HEIGHT = 0.3
 export const TABLE_OFFSET_Z = 0.8
 
 export function TableWithCushions({ floorY, centerZ }: TableWithCushionsProps) {
-  const { scene } = useGLTF(TABLE_URL) as GLTF
+  const { scene } = useGLTF(TABLE_URL, '/draco/') as GLTF
 
   const centeredScene = useMemo(() => {
     const clone = scene.clone()
@@ -44,4 +44,4 @@ export function TableWithCushions({ floorY, centerZ }: TableWithCushionsProps) {
   )
 }
 
-useGLTF.preload(TABLE_URL)
+useGLTF.preload(TABLE_URL, '/draco/')

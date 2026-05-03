@@ -288,7 +288,7 @@ function animateScreenParticles(
 }
 
 export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModelProps) {
-  const { scene } = useGLTF(MODEL_URL) as GLTF
+  const { scene } = useGLTF(MODEL_URL, '/draco/') as GLTF
   const groupRef = useRef<Group>(null)
   const [lanternLights, setLanternLights] = useState<
     {
@@ -612,4 +612,4 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
   )
 }
 
-useGLTF.preload(MODEL_URL)
+useGLTF.preload(MODEL_URL, '/draco/')
