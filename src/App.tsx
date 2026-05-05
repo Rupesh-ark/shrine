@@ -1,9 +1,5 @@
-import { useRef, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
-import * as THREE from 'three'
+import { lazy, Suspense, useRef, useState } from 'react'
 import { useScrollProgress } from './hooks/useScrollProgress'
-import { Scene } from './components/Scene'
-import { PostProcessing } from './components/PostProcessing'
 import { ScrollOverlay } from './components/ScrollOverlay'
 import { HeroOverlay } from './components/HeroOverlay'
 import { TransitionOverlay } from './components/TransitionOverlay'
@@ -12,10 +8,11 @@ import { MusicOverlay } from './components/MusicOverlay'
 import { EntryGate } from './components/EntryGate'
 import { GRAIN_URL } from './constants/grain'
 
-function getFov() {
-  if (typeof window === 'undefined') return 50
-  return window.innerWidth < 768 ? 90 : 50
-}
+const CanvasScene = lazy(() => import('./components/CanvasScene'))
+
+// Start downloading the heavy 3D chunk in the background immediately
+// so it's likely ready by the time the user clicks "Enter"
+void import('./components/CanvasScene')
 
 function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserRef: React.RefObject<AnalyserNode | null>, muted: boolean) {
   if (analyserRef.current) return
@@ -23,7 +20,7 @@ function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserR
   const audio = new Audio('/music/piano.mp3')
   audio.loop = true
   audio.volume = 0.45
-  audio.preload = 'auto'
+  audio.preload = 'none'
   audio.muted = muted
   audioRef.current = audio
 
@@ -43,12 +40,15 @@ function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserR
 
 export function App() {
   const [muted, setMuted] = useState(false)
+  const [entered, setEntered] = useState(false)
+  const [houseReady, setHouseReady] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
-  const progress = useScrollProgress(400)
   const audioStartedRef = useRef(false)
+  const progress = useScrollProgress(400)
 
   const handleEnter = () => {
+    if (!entered) setEntered(true)
     if (audioStartedRef.current) return
     audioStartedRef.current = true
     initAudio(audioRef, analyserRef, muted)
@@ -66,22 +66,10 @@ export function App() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, isolation: 'isolate' }}>
-      <EntryGate onEnter={handleEnter} />
-      <Canvas
-        camera={{ position: [0, 2.85, 4], fov: getFov() }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, powerPreference: 'high-performance', premultipliedAlpha: false }}
-        onCreated={({ gl }) => {
-          gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.08
-          gl.outputColorSpace = THREE.SRGBColorSpace
-        }}
-        style={{ position: 'fixed', inset: 0 }}
-      >
-        <color attach="background" args={['#111625']} />
-        <Scene progress={progress} />
-        <PostProcessing />
-      </Canvas>
+      <EntryGate onEnter={handleEnter} ready={houseReady} />
+      <Suspense fallback={null}>
+        <CanvasScene progress={progress} onHouseReady={() => setHouseReady(true)} />
+      </Suspense>
       <div
         aria-hidden
         style={{
@@ -95,6 +83,7 @@ export function App() {
           backgroundSize: '560px 560px',
         }}
       />
+
       {/* Bottom gradient to hide ground plane — fades as we scroll */}
       <div
         aria-hidden
@@ -103,11 +92,11 @@ export function App() {
           left: 0,
           right: 0,
           bottom: 0,
-          height: '35vh',
+          height: '28vh',
           pointerEvents: 'none',
           zIndex: 4,
-          opacity: 1 - Math.min(1, progress / 0.15),
-          background: 'linear-gradient(to top, #111625 0%, #111625 40%, transparent 100%)',
+          opacity: 1 - Math.min(1, progress / 0.12),
+          background: 'linear-gradient(to top, #111625 0%, #111625 35%, transparent 100%)',
           transition: 'opacity 0.1s linear',
         }}
       />

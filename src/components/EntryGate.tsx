@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 
 interface EntryGateProps {
   onEnter: () => void
+  ready?: boolean
 }
 
-type Phase = 'appear' | 'idle' | 'spreading' | 'filled' | 'fading' | 'done'
+type Phase = 'appear' | 'waiting' | 'idle' | 'spreading' | 'filled' | 'fading' | 'done'
 
 const SCENE_BG = '#111625'
 const GATE_BG = '#161D2E'
@@ -12,17 +13,28 @@ const LANTERN_RED = '#C42020'
 const LANTERN_CORE = '#FF6B5B'
 const AMBER = '#C4A77D'
 
-export function EntryGate({ onEnter }: EntryGateProps) {
+export function EntryGate({ onEnter, ready = false }: EntryGateProps) {
   const [phase, setPhase] = useState<Phase>('appear')
   const timeoutsRef = useRef<number[]>([])
 
   useEffect(() => {
-    const t = setTimeout(() => setPhase('idle'), 800)
+    const t = setTimeout(() => {
+      setPhase((prev) => {
+        if (prev !== 'appear') return prev
+        return ready ? 'idle' : 'waiting'
+      })
+    }, 800)
     timeoutsRef.current.push(t)
     return () => {
       timeoutsRef.current.forEach(clearTimeout)
     }
-  }, [])
+  }, [ready])
+
+  useEffect(() => {
+    if (ready && phase === 'waiting') {
+      setPhase('idle')
+    }
+  }, [ready, phase])
 
   const handleClick = () => {
     if (phase !== 'idle') return
@@ -39,6 +51,7 @@ export function EntryGate({ onEnter }: EntryGateProps) {
   const isFilled = phase === 'filled'
   const isFading = phase === 'fading'
   const isIdle = phase === 'idle'
+  const isWaiting = phase === 'waiting'
   const isAppearing = phase === 'appear'
 
   return (
@@ -208,7 +221,7 @@ export function EntryGate({ onEnter }: EntryGateProps) {
             height: '100%',
             borderRadius: '50%',
             position: 'relative',
-            transform: isIdle ? 'scale(1)' : 'scale(0)',
+            transform: (isIdle || isWaiting) ? 'scale(1)' : 'scale(0)',
             transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}>
             {/* Base sphere body */}
@@ -292,7 +305,7 @@ export function EntryGate({ onEnter }: EntryGateProps) {
             opacity: 0.9,
             textShadow: `0 0 20px ${AMBER}33`,
           }}>
-            始める
+            {isWaiting ? '準備中' : '始める'}
           </p>
           <p style={{
             fontFamily: "'Playfair Display', Georgia, serif",
@@ -302,7 +315,7 @@ export function EntryGate({ onEnter }: EntryGateProps) {
             letterSpacing: '3px',
             margin: 0,
           }}>
-            Touch to begin
+            {isWaiting ? 'Preparing shrine...' : 'Touch to begin'}
           </p>
         </div>
       </div>
@@ -316,7 +329,7 @@ export function EntryGate({ onEnter }: EntryGateProps) {
         height: '48px',
         borderLeft: `1px solid ${AMBER}18`,
         borderTop: `1px solid ${AMBER}18`,
-        opacity: isIdle ? 1 : 0,
+        opacity: (isIdle || isWaiting) ? 1 : 0,
         transition: 'opacity 0.5s ease-out',
         pointerEvents: 'none',
       }} />
@@ -328,7 +341,7 @@ export function EntryGate({ onEnter }: EntryGateProps) {
         height: '48px',
         borderRight: `1px solid ${AMBER}18`,
         borderBottom: `1px solid ${AMBER}18`,
-        opacity: isIdle ? 1 : 0,
+        opacity: (isIdle || isWaiting) ? 1 : 0,
         transition: 'opacity 0.5s ease-out',
         pointerEvents: 'none',
       }} />

@@ -2,11 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const OUTSIDE_Z = 5
+const OUTSIDE_Z = 3.0
+const MOBILE_OUTSIDE_Z = 3.5
 const INSIDE_Z = -1.5
 const SCROLL_Z = -1.8
 const BASE_Y = 1.1
 const INTRO_Y = 2.75
+const MOBILE_INTRO_Y = 2.9
 const DEFAULT_GROUND_TOP_Y = -1.35
 const CAMERA_TRANSITION_END = 0.18
 const INTRO_LOOK_AT_Y_BIAS = 0.30
@@ -92,16 +94,17 @@ export function useCameraAnimation(progress: number) {
     const portalT = THREE.MathUtils.smoothstep(progress, 0.56, 0.84)
     const cameraBlendT = THREE.MathUtils.smoothstep(progress, 0.0, CAMERA_TRANSITION_END)
 
+    const isMobile = state.size.width < 768
     const focusZ = focus ? focus.z + 0.15 : SCROLL_Z
     const focusY = focus ? focus.y + 0.35 : BASE_Y
-    const entryZ = THREE.MathUtils.lerp(OUTSIDE_Z, INSIDE_Z, entryT)
+    const outsideZ = isMobile ? MOBILE_OUTSIDE_Z : OUTSIDE_Z
+    const entryZ = THREE.MathUtils.lerp(outsideZ, INSIDE_Z, entryT)
     const targetZ = THREE.MathUtils.lerp(entryZ, focusZ, portalT)
-
-    const isMobile = state.size.width < 768
-    const mobileIntroYOffset = isMobile ? 0.6 : 0
+    const mobileIntroYOffset = isMobile ? 0.1 : 0
+    const introY = isMobile ? MOBILE_INTRO_Y : INTRO_Y
     const doorSafeY = BASE_Y + 0.25
     const approachDoorT = THREE.MathUtils.smoothstep(progress, 0.0, 0.30)
-    const yAtDoor = THREE.MathUtils.lerp(INTRO_Y + mobileIntroYOffset, doorSafeY, approachDoorT)
+    const yAtDoor = THREE.MathUtils.lerp(introY + mobileIntroYOffset, doorSafeY, approachDoorT)
     const settleYT = THREE.MathUtils.smoothstep(progress, 0.50, 0.82)
     const targetY = THREE.MathUtils.lerp(yAtDoor, focusY, settleYT)
     const scrollLookAtTarget = focus

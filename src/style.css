@@ -7,14 +7,6 @@
 }
 
 @font-face {
-  font-family: 'Mashiro';
-  src: url('/fonts/MashiroDemoRegular-V4jyw.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: 'NinjaKage';
   src: url('/fonts/NinjaKageDemo-Regular.otf') format('opentype');
   font-weight: normal;
@@ -26,14 +18,6 @@
   font-family: 'NinjaKage';
   src: url('/fonts/NinjaKageDemo-Rough.ttf') format('truetype');
   font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'NerdFont';
-  src: url('/fonts/JetBrainsMonoNerdFont-Regular.ttf') format('truetype');
-  font-weight: normal;
   font-style: normal;
   font-display: swap;
 }

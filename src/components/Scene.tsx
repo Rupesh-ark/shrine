@@ -11,7 +11,7 @@ import { SceneLighting } from './SceneLighting'
 
 const GROUND_HEIGHT = 6
 
-export function Scene({ progress }: SceneProps) {
+export function Scene({ progress, onHouseReady }: SceneProps) {
   const { groundTopY, groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress)
 
   return (
@@ -45,7 +45,7 @@ export function Scene({ progress }: SceneProps) {
       </mesh>
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={onHouseReady} />
       </Suspense>
 
       <ContactShadows

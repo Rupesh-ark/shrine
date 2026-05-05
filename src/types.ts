@@ -5,6 +5,7 @@ export interface HouseModelProps {
   onBounds?: (bounds: Box3) => void
   onScrollFocus?: (position: Vector3) => void
   progress?: number
+  onReady?: () => void
 }
 
 export interface DoorAnimData {
@@ -72,6 +73,7 @@ export interface SkyDomeProps {
 
 export interface SceneProps {
   progress: number
+  onHouseReady?: () => void
 }
 
 // Hook types
