@@ -157,9 +157,9 @@ function findLowestTatamiY(scene: THREE.Object3D, group: THREE.Group, temp: THRE
   return lowest
 }
 
-function animateDoors(doors: { mesh: Mesh; initialX: number; closedX: number }[], openProgress: number) {
+function animateDoors(doors: { mesh: Mesh; closedX: number; openX: number }[], openProgress: number) {
   for (const door of doors) {
-    const targetX = THREE.MathUtils.lerp(door.closedX, door.initialX, openProgress)
+    const targetX = THREE.MathUtils.lerp(door.closedX, door.openX, openProgress)
     door.mesh.position.x = THREE.MathUtils.lerp(door.mesh.position.x, targetX, 0.1)
   }
 }
@@ -303,7 +303,7 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
   const [oniPositions, setOniPositions] = useState<[number, number, number][]>([])
   const [tableFloorY, setTableFloorY] = useState(0.46)
   const [tableCenterZ, setTableCenterZ] = useState(0)
-  const doorRefs = useRef<{ mesh: Mesh; initialX: number; closedX: number }[]>([])
+  const doorRefs = useRef<{ mesh: Mesh; closedX: number; openX: number }[]>([])
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const screenTextureRef = useRef<THREE.CanvasTexture | null>(null)
   const screenParticlesRef = useRef<ScreenParticle[]>([])
@@ -367,22 +367,25 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
     })
 
     // Collect door meshes for animation
-    // GLB now has doors in CLOSED position; compute their OPEN positions
-    const doors: { mesh: Mesh; initialX: number; closedX: number }[] = []
+    // GLB has doors in CLOSED position; compute their OPEN positions
+    // DO NOT mutate mesh.position here — only capture target positions
+    const doors: { mesh: Mesh; closedX: number; openX: number }[] = []
     const SLIDE_DISTANCE = 0.35
     scene.traverse((obj: THREE.Object3D) => {
       if (obj.type !== 'Mesh') return
       const mesh = obj as Mesh
       const name = mesh.name.toLowerCase()
-      if (name.startsWith('shoji_door_002') || name.startsWith('shoji_door_003')) {
+      // Use name prefix to determine left/right, NOT position
+      // shoji_door_002* = left door → opens left (-X)
+      // shoji_door_003* = right door → opens right (+X)
+      if (name.startsWith('shoji_door_002')) {
         const closedX = mesh.position.x
-        const isLeftSide = closedX < 0
-        // In the old model: closedX = initialX + closeDirection * SLIDE_DISTANCE
-        // closeDirection was +1 for left, -1 for right (toward center to close)
-        // So to get open position from closed: initialX = closedX - closeDirection * SLIDE_DISTANCE
-        const closeDirection = isLeftSide ? 1 : -1
-        const initialX = closedX - closeDirection * SLIDE_DISTANCE
-        doors.push({ mesh, initialX, closedX })
+        const openX = closedX - SLIDE_DISTANCE
+        doors.push({ mesh, closedX, openX })
+      } else if (name.startsWith('shoji_door_003')) {
+        const closedX = mesh.position.x
+        const openX = closedX + SLIDE_DISTANCE
+        doors.push({ mesh, closedX, openX })
       }
     })
     doorRefs.current = doors
