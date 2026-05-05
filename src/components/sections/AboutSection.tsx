@@ -39,7 +39,7 @@ export function AboutSection() {
           }} />
 
           <img
-            src="/images/Rupesh_Pandey_Stylised.webp"
+            src="/images/Rupesh_Pandey.webp"
             alt="Rupesh Pandey"
             loading="lazy"
             decoding="async"
