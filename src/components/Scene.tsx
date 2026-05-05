@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ContactShadows } from '@react-three/drei'
 import { useCameraAnimation } from '../hooks/useCameraAnimation'
 import type { SceneProps } from '../types'
@@ -14,12 +14,14 @@ const GROUND_HEIGHT = 6
 
 export function Scene({ progress, onHouseReady, entered }: SceneProps) {
   const { groundTopY, groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress, entered)
-  const [houseReady, setHouseReady] = useState(false)
+  const [modelReady, setModelReady] = useState(false)
+  const [shadersReady, setShadersReady] = useState(false)
 
-  const handleHouseReady = useCallback(() => {
-    setHouseReady(true)
-    onHouseReady?.()
-  }, [onHouseReady])
+  useEffect(() => {
+    if (modelReady && shadersReady) {
+      onHouseReady?.()
+    }
+  }, [modelReady, shadersReady, onHouseReady])
 
   return (
     <>
@@ -52,10 +54,10 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       </mesh>
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={handleHouseReady} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={() => setModelReady(true)} />
       </Suspense>
 
-      <ShaderPrecompiler enabled={houseReady} />
+      <ShaderPrecompiler enabled={modelReady} onDone={() => setShadersReady(true)} />
 
       <ContactShadows
         position={[0, overlayBaseY, 0]}
