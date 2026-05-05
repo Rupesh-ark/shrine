@@ -19,7 +19,7 @@ export const PROJECTS = [
 ]
 
 export const SKILLS = [
-  { name: 'Typescript', level: 3 }, { name: 'React', level: 3 }, { name: 'TypeScript', level: 2 },
+  { name: 'Typescript', level: 3 }, { name: 'React', level: 3 },
   { name: 'Python', level: 3 }, { name: 'Node.js', level: 2 }, { name: 'Unity', level: 2 },
   { name: 'C#', level: 2 }, { name: 'Java', level: 2 }, { name: 'C++', level: 2 },
   { name: 'Three.js', level: 2 }, { name: 'WebGL', level: 1 },
