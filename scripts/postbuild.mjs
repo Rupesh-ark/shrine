@@ -19,8 +19,16 @@ if (canvasChunk) {
 }
 
 if (preloads.length > 0) {
-  // Insert before </head>, after existing preloads
-  html = html.replace('</head>', preloads.join('\n') + '\n  </head>')
-  writeFileSync(htmlPath, html)
+  html = html.replace('  </head>', preloads.join('\n') + '\n  </head>')
+}
+
+html = html.replace(
+  /<script type="module" crossorigin src="\/assets\/index-[^"]+\.js"><\/script>/,
+  (match) => match.replace('<script ', '<script fetchpriority="high" ')
+)
+
+writeFileSync(htmlPath, html)
+console.log('Post-build HTML optimizations applied.')
+if (preloads.length > 0) {
   console.log('Injected modulepreloads:', preloads.map(s => s.match(/href="([^"]+)"/)[1]))
 }
