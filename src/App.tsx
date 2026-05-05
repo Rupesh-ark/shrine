@@ -2,7 +2,6 @@ import { lazy, Suspense, useRef, useState } from 'react'
 import { useScrollProgress } from './hooks/useScrollProgress'
 import { ScrollOverlay } from './components/ScrollOverlay'
 import { HeroOverlay } from './components/HeroOverlay'
-import { TransitionOverlay } from './components/TransitionOverlay'
 import { ProgressOverlay } from './components/ProgressOverlay'
 import { MusicOverlay } from './components/MusicOverlay'
 import { EntryGate } from './components/EntryGate'
@@ -45,7 +44,7 @@ export function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const audioStartedRef = useRef(false)
-  const progress = useScrollProgress(600)
+  const progress = useScrollProgress(800)
 
   const handleEnter = () => {
     if (!entered) setEntered(true)
@@ -102,7 +101,6 @@ export function App() {
       />
       <HeroOverlay progress={progress} />
       <ProgressOverlay progress={progress} />
-      <TransitionOverlay progress={progress} />
       <ScrollOverlay progress={progress} />
       <MusicOverlay muted={muted} onToggleMute={handleToggleMute} />
     </div>
