@@ -40,9 +40,9 @@ jobs:
           source: "dist/"
           target: "/opt/rupesh-data-workers/site/"
           strip_components: 0
-          rm: true
+          overwrite: true
 
-      - name: Reload Caddy
+      - name: Restart Caddy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -50,4 +50,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+            cd /opt/rupesh-data-workers && docker compose restart caddy
