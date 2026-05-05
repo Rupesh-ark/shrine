@@ -95,6 +95,22 @@ export function App() {
           backgroundSize: '560px 560px',
         }}
       />
+      {/* Bottom gradient to hide ground plane — fades as we scroll */}
+      <div
+        aria-hidden
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: '35vh',
+          pointerEvents: 'none',
+          zIndex: 4,
+          opacity: 1 - Math.min(1, progress / 0.15),
+          background: 'linear-gradient(to top, #111625 0%, #111625 40%, transparent 100%)',
+          transition: 'opacity 0.1s linear',
+        }}
+      />
       <HeroOverlay progress={progress} />
       <ProgressOverlay progress={progress} />
       <TransitionOverlay progress={progress} />
