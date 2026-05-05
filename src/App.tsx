@@ -45,7 +45,7 @@ export function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const audioStartedRef = useRef(false)
-  const progress = useScrollProgress(400)
+  const progress = useScrollProgress(600)
 
   const handleEnter = () => {
     if (!entered) setEntered(true)
