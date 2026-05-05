@@ -15,7 +15,9 @@ import { RedSpirits } from './Atmosphere'
 import { TableWithCushions, TABLE_OFFSET_Z } from './Table'
 import { SCROLL_LIFT, SCROLL_OFFSET_X, SCROLL_OFFSET_Z, TableScroll } from './TableScroll'
 
-const MODEL_URL = '/models/final_house/house.glb'
+// Cache-bust the model on every build so browsers don't use stale GLB files
+const CACHE_BUST = `?v=${import.meta.env.VITE_BUILD_HASH || Date.now()}`
+const MODEL_URL = `/models/final_house/house.glb${CACHE_BUST}`
 const TARGET_HEIGHT = 3.8
 const GROUND_Y = -1.38
 const TARGET_FRONT_Z = 0.3
