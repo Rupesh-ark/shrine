@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useGLTF, Environment } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -288,9 +288,7 @@ function animateScreenParticles(
 }
 
 export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModelProps) {
-  const { scene: cachedScene } = useGLTF(MODEL_URL, '/draco/') as GLTF
-  // Clone so mutations don't persist in the global useGLTF cache
-  const scene = useMemo(() => cachedScene.clone(), [cachedScene])
+  const { scene } = useGLTF(MODEL_URL, '/draco/') as GLTF
   const groupRef = useRef<Group>(null)
   const [lanternLights, setLanternLights] = useState<
     {
@@ -571,6 +569,12 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
       const scrollWorld = scrollLocal.clone()
       groupRef.current.localToWorld(scrollWorld)
       onScrollFocus?.(scrollWorld)
+    }
+
+    return () => {
+      // Reset scene transforms so StrictMode re-runs are deterministic
+      scene.position.set(0, 0, 0)
+      scene.scale.setScalar(1)
     }
   }, [onBounds, onScrollFocus, scene])
 
