@@ -82,6 +82,12 @@ export function useCameraAnimation(progress: number) {
     const focus = scrollFocusRef.current
     const camera = state.camera as THREE.PerspectiveCamera
 
+    // Debug: log camera position at progress = 0 on first few frames
+    if (progress === 0 && timeRef.current < 0.1) {
+      // eslint-disable-next-line no-console
+      console.log('Camera pos:', camera.position.toArray(), 'houseBounds:', houseBounds?.min.y.toFixed(2) ?? 'null')
+    }
+
     const entryT = THREE.MathUtils.smoothstep(progress, 0.0, 0.55)
     const portalT = THREE.MathUtils.smoothstep(progress, 0.56, 0.84)
     const cameraBlendT = THREE.MathUtils.smoothstep(progress, 0.0, CAMERA_TRANSITION_END)
