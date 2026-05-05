@@ -1,0 +1,119 @@
+# Apply this on the server at /opt/rupesh-data-workers/docker-compose.yml
+#
+# CHANGES MADE:
+# 1. Removed the entire `site:` service block
+# 2. Added volume mount to caddy: ./site/dist:/srv/site
+#
+
+services:
+  miniflux:
+    image: miniflux/miniflux:latest
+    container_name: miniflux
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - DATABASE_URL=postgres://miniflux:${MINIFLUX_DB_PASSWORD:-miniflux}@postgres/miniflux?sslmode=disable
+      - RUN_MIGRATIONS=1
+      - CREATE_ADMIN=1
+      - ADMIN_USERNAME=${MINIFLUX_ADMIN_USER:-rupesh}
+      - ADMIN_PASSWORD=${MINIFLUX_ADMIN_PASSWORD:-changeme}
+      - FETCH_YOUTUBE_WATCH_TIME=1
+      - CLEANUP_ARCHIVE_UNREAD_DAYS=-1
+      - CLEANUP_ARCHIVE_READ_DAYS=-1
+      - FETCHER_ALLOW_PRIVATE_NETWORKS=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=miniflux
+      - POSTGRES_PASSWORD=${MINIFLUX_DB_PASSWORD:-miniflux}
+      - POSTGRES_DB=miniflux
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-data-service.sh
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "miniflux"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rsshub:
+    image: diygod/rsshub:latest
+    container_name: rsshub
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1200:1200"
+    environment:
+      - NODE_ENV=production
+      - CACHE_TYPE=memory
+
+  data-service:
+    build:
+      context: ./data-service
+      dockerfile: Dockerfile
+    container_name: data-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - DATABASE_URL=postgres://miniflux:${MINIFLUX_DB_PASSWORD:-miniflux}@postgres:5432/data_service
+      - MINIFLUX_URL=http://miniflux:8080
+      - MINIFLUX_USERNAME=${MINIFLUX_ADMIN_USER:-rupesh}
+      - MINIFLUX_PASSWORD=${MINIFLUX_ADMIN_PASSWORD:-changeme}
+      - RSSHUB_URL=http://rsshub:1200
+      - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      miniflux:
+        condition: service_started
+      rsshub:
+        condition: service_started
+
+  pgweb-data:
+    image: sosedoff/pgweb
+    container_name: pgweb-data
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:8081"
+    environment:
+      PGWEB_DATABASE_URL: postgres://miniflux:${MINIFLUX_DB_PASSWORD:-miniflux}@postgres:5432/data_service?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pgweb-miniflux:
+    image: sosedoff/pgweb
+    container_name: pgweb-miniflux
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8083:8081"
+    environment:
+      PGWEB_DATABASE_URL: postgres://miniflux:${MINIFLUX_DB_PASSWORD:-miniflux}@postgres:5432/miniflux?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./site/dist:/srv/site
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:

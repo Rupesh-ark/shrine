@@ -1,0 +1,25 @@
+rupeshpandey.dev {
+	root * /srv/site
+	file_server
+	try_files {path} /index.html
+
+	# No-cache for HTML (SPA navigation)
+	@html {
+		path *.html
+	}
+	header @html Cache-Control "no-cache, no-store, must-revalidate"
+
+	# Long cache for static assets
+	@assets {
+		path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot *.otf *.webp *.glb *.gltf *.mp3 *.wasm
+	}
+	header @assets Cache-Control "public, immutable"
+}
+
+www.rupeshpandey.dev {
+	redir https://rupeshpandey.dev{uri} permanent
+}
+
+eots.rupeshpandey.dev {
+	reverse_proxy eots-server:8000
+}
