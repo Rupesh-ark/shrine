@@ -305,8 +305,35 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const screenTextureRef = useRef<THREE.CanvasTexture | null>(null)
   const screenParticlesRef = useRef<ScreenParticle[]>([])
+  const originalDoorPositionsRef = useRef<Map<string, number> | null>(null)
 
   useLayoutEffect(() => {
+    // StrictMode safety: capture original door positions on first run,
+    // then restore them before computing bounds so layout is deterministic
+    // regardless of how many times the effect runs.
+    if (!originalDoorPositionsRef.current) {
+      const originals = new Map<string, number>()
+      scene.traverse((obj: THREE.Object3D) => {
+        if (obj.type !== 'Mesh') return
+        const mesh = obj as Mesh
+        const name = mesh.name.toLowerCase()
+        if (name.startsWith('shoji_door_002') || name.startsWith('shoji_door_003')) {
+          originals.set(mesh.name, mesh.position.x)
+        }
+      })
+      originalDoorPositionsRef.current = originals
+    }
+
+    // Restore original door positions before bounds calculation
+    scene.traverse((obj: THREE.Object3D) => {
+      if (obj.type !== 'Mesh') return
+      const mesh = obj as Mesh
+      const originalX = originalDoorPositionsRef.current!.get(mesh.name)
+      if (originalX !== undefined) {
+        mesh.position.x = originalX
+      }
+    })
+
     scene.position.set(0, 0, 0)
     scene.scale.setScalar(1)
 
