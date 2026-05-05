@@ -4,10 +4,6 @@ export function useScrollProgress(scrollHeightVh = 400) {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual'
-    }
-    window.scrollTo(0, 0)
     document.body.style.height = `${String(scrollHeightVh)}vh`
 
     const onScroll = () => {
