@@ -157,9 +157,9 @@ function findLowestTatamiY(scene: THREE.Object3D, group: THREE.Group, temp: THRE
   return lowest
 }
 
-function animateDoors(doors: { mesh: Mesh; initialX: number; closedX: number }[], openProgress: number) {
+function animateDoors(doors: { mesh: Mesh; closedX: number; openX: number }[], openProgress: number) {
   for (const door of doors) {
-    const targetX = THREE.MathUtils.lerp(door.closedX, door.initialX, openProgress)
+    const targetX = THREE.MathUtils.lerp(door.closedX, door.openX, openProgress)
     door.mesh.position.x = THREE.MathUtils.lerp(door.mesh.position.x, targetX, 0.1)
   }
 }
@@ -301,39 +301,12 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
   const [oniPositions, setOniPositions] = useState<[number, number, number][]>([])
   const [tableFloorY, setTableFloorY] = useState(0.46)
   const [tableCenterZ, setTableCenterZ] = useState(0)
-  const doorRefs = useRef<{ mesh: Mesh; initialX: number; closedX: number; direction: number }[]>([])
+  const doorRefs = useRef<{ mesh: Mesh; closedX: number; openX: number }[]>([])
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const screenTextureRef = useRef<THREE.CanvasTexture | null>(null)
   const screenParticlesRef = useRef<ScreenParticle[]>([])
-  const originalDoorPositionsRef = useRef<Map<string, number> | null>(null)
 
   useLayoutEffect(() => {
-    // StrictMode safety: capture original door positions on first run,
-    // then restore them before computing bounds so layout is deterministic
-    // regardless of how many times the effect runs.
-    if (!originalDoorPositionsRef.current) {
-      const originals = new Map<string, number>()
-      scene.traverse((obj: THREE.Object3D) => {
-        if (obj.type !== 'Mesh') return
-        const mesh = obj as Mesh
-        const name = mesh.name.toLowerCase()
-        if (name.startsWith('shoji_door_002') || name.startsWith('shoji_door_003')) {
-          originals.set(mesh.name, mesh.position.x)
-        }
-      })
-      originalDoorPositionsRef.current = originals
-    }
-
-    // Restore original door positions before bounds calculation
-    scene.traverse((obj: THREE.Object3D) => {
-      if (obj.type !== 'Mesh') return
-      const mesh = obj as Mesh
-      const originalX = originalDoorPositionsRef.current!.get(mesh.name)
-      if (originalX !== undefined) {
-        mesh.position.x = originalX
-      }
-    })
-
     scene.position.set(0, 0, 0)
     scene.scale.setScalar(1)
 
@@ -392,23 +365,21 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0 }: HouseModel
     })
 
     // Collect door meshes for animation
-    // GLB has doors in OPEN position; we snap them to CLOSED on mount
-    const doors: { mesh: Mesh; initialX: number; closedX: number; direction: number }[] = []
+    // GLB now has doors in CLOSED position; we compute their OPEN positions
+    const doors: { mesh: Mesh; closedX: number; openX: number }[] = []
     const SLIDE_DISTANCE = 0.35
     scene.traverse((obj: THREE.Object3D) => {
       if (obj.type !== 'Mesh') return
       const mesh = obj as Mesh
       const name = mesh.name.toLowerCase()
       if (name.startsWith('shoji_door_002') || name.startsWith('shoji_door_003')) {
-        const initialX = mesh.position.x
-        // Which way is "inward" (toward center) for this door?
-        // We figure it out by seeing if initialX is positive or negative
-        const isLeftSide = initialX < 0
-        // To close: left door moves +X (right), right door moves -X (left)
-        const closeDirection = isLeftSide ? 1 : -1
-        const closedX = initialX + closeDirection * SLIDE_DISTANCE
-        mesh.position.x = closedX
-        doors.push({ mesh, initialX, closedX, direction: closeDirection })
+        const closedX = mesh.position.x
+        // Which way is "outward" (away from center) for this door?
+        const isLeftSide = closedX < 0
+        // To open: left door moves -X (left), right door moves +X (right)
+        const openDirection = isLeftSide ? -1 : 1
+        const openX = closedX + openDirection * SLIDE_DISTANCE
+        doors.push({ mesh, closedX, openX })
       }
     })
     doorRefs.current = doors
