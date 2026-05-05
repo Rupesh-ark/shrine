@@ -49,7 +49,6 @@ function generateFlames(): FlameData[] {
     })
   }
 
-  // Surrounding spirits — around the house at lower heights
   for (let i = 0; i < 24; i++) {
     const angle = (i / 24) * Math.PI * 2 + (rng() - 0.5) * 0.4
     const radius = 1.8 + rng() * 2.0
@@ -78,7 +77,6 @@ function FlameSprite({ data }: { data: FlameData }) {
     if (!spriteRef.current || !glowRef.current || !featherRef.current || !lightRef.current) return
     const t = state.clock.elapsedTime
 
-    // Outer glow: slow, wide drift (stationary halo)
     const glowY = data.basePosition.y + Math.sin(t * data.speed * 0.45 + data.phase) * 0.06
     const glowX = data.basePosition.x + Math.sin(t * 0.25 + data.phase) * 0.12
     const glowZ = data.basePosition.z + Math.cos(t * 0.2 + data.phase) * 0.1
@@ -86,7 +84,6 @@ function FlameSprite({ data }: { data: FlameData }) {
     glowRef.current.position.set(glowX, glowY, glowZ)
     featherRef.current.position.set(glowX, glowY, glowZ)
 
-    // Inner flame: tighter movement inside the halo
     const flameY = glowY + Math.sin(t * data.speed * 1.1 + data.phase + 1) * 0.03
     const flameX = glowX + Math.sin(t * 0.7 + data.phase + 2) * 0.02
     const flameZ = glowZ + Math.cos(t * 0.6 + data.phase + 3) * 0.016
@@ -94,19 +91,16 @@ function FlameSprite({ data }: { data: FlameData }) {
     spriteRef.current.position.set(flameX, flameY, flameZ)
     lightRef.current.position.set(flameX, flameY, flameZ)
 
-    // Flicker scale
     const flicker = 1 + Math.sin(t * 6 + data.phase) * 0.12
     spriteRef.current.scale.setScalar(data.scale * flicker)
     glowRef.current.scale.setScalar(data.scale * flicker * 2.4)
     featherRef.current.scale.setScalar(data.scale * flicker * 4.8)
 
-    // Flicker light
     lightRef.current.intensity = 1.2 + Math.sin(t * 5 + data.phase) * 0.35
   })
 
   return (
     <group position={[data.basePosition.x, data.basePosition.y, data.basePosition.z]}>
-      {/* Feather layer — radial gradient that softens PNG edges */}
       <sprite ref={featherRef}>
         <spriteMaterial
           map={softGlowTexture}
@@ -116,7 +110,6 @@ function FlameSprite({ data }: { data: FlameData }) {
           depthWrite={false}
         />
       </sprite>
-      {/* Outer glow halo */}
       <sprite ref={glowRef}>
         <spriteMaterial
           map={flameTexture}
@@ -127,7 +120,6 @@ function FlameSprite({ data }: { data: FlameData }) {
           depthWrite={false}
         />
       </sprite>
-      {/* Inner flame */}
       <sprite ref={spriteRef}>
         <spriteMaterial
           map={flameTexture}
@@ -197,7 +189,6 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
     if (!spriteRef.current || !glowRef.current || !featherRef.current || !lightRef.current || !warmLightRef.current) return
     const t = state.clock.elapsedTime
 
-    // Local offsets from group origin (group is already at basePosition)
     const glowY = Math.sin(t * data.speed * 0.45 + data.phase) * 0.15
     const glowX = Math.sin(t * 0.28 + data.phase) * 0.2
     const glowZ = Math.cos(t * 0.24 + data.phase) * 0.18
@@ -205,7 +196,6 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
     glowRef.current.position.set(glowX, glowY, glowZ)
     featherRef.current.position.set(glowX, glowY, glowZ)
 
-    // Tighter flame movement inside the glow
     const flameY = glowY + Math.sin(t * data.speed * 1.2 + data.phase + 1) * 0.06
     const flameX = glowX + Math.sin(t * 0.8 + data.phase + 2) * 0.04
     const flameZ = glowZ + Math.cos(t * 0.7 + data.phase + 3) * 0.03
@@ -214,13 +204,11 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
     lightRef.current.position.set(flameX, flameY, flameZ)
     warmLightRef.current.position.set(flameX, flameY - 0.15, flameZ)
 
-    // Aggressive flicker
     const flicker = 1 + Math.sin(t * 7 + data.phase) * 0.18 + Math.sin(t * 11 + data.phase * 1.3) * 0.06
     spriteRef.current.scale.setScalar(data.scale * flicker)
     glowRef.current.scale.setScalar(data.scale * flicker * 2.2)
     featherRef.current.scale.setScalar(data.scale * flicker * 5.0)
 
-    // Strong pulsing light to illuminate the gold oni
     lightRef.current.intensity = 3.4 + Math.sin(t * 6 + data.phase) * 0.95
     warmLightRef.current.intensity = 1.4 + Math.sin(t * 4.5 + data.phase + 2) * 0.45
   })
@@ -256,9 +244,7 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
           depthWrite={false}
         />
       </sprite>
-      {/* Main fire light — illuminates the oni */}
       <pointLight ref={lightRef} color="#FF6B35" intensity={3.4} distance={5.5} decay={2} />
-      {/* Warm under-glow for gold reflection */}
       <pointLight ref={warmLightRef} color="#FFD08A" intensity={1.4} distance={3.5} decay={2} />
     </group>
   )

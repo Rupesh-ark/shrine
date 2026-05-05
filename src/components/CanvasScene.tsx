@@ -12,7 +12,7 @@ function getCamera() {
   }
 }
 
-export default function CanvasScene({ progress, onHouseReady }: SceneProps) {
+export default function CanvasScene({ progress, onHouseReady, entered }: SceneProps) {
   return (
     <Canvas
       camera={{ position: [...getCamera().position], fov: getCamera().fov }}
@@ -24,9 +24,10 @@ export default function CanvasScene({ progress, onHouseReady }: SceneProps) {
         gl.outputColorSpace = THREE.SRGBColorSpace
       }}
       style={{ position: 'fixed', inset: 0 }}
+      frameloop={entered ? 'always' : 'never'}
     >
       <color attach="background" args={['#111625']} />
-      <Scene progress={progress} onHouseReady={onHouseReady} />
+      <Scene progress={progress} onHouseReady={onHouseReady} entered={entered} />
       <PostProcessing />
     </Canvas>
   )

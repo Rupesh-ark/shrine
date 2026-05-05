@@ -11,8 +11,8 @@ import { SceneLighting } from './SceneLighting'
 
 const GROUND_HEIGHT = 6
 
-export function Scene({ progress, onHouseReady }: SceneProps) {
-  const { groundTopY, groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress)
+export function Scene({ progress, onHouseReady, entered }: SceneProps) {
+  const { groundTopY, groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress, entered)
 
   return (
     <>

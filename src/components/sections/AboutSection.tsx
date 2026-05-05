@@ -12,9 +12,7 @@ export function AboutSection() {
     }}>
       <SectionHeader kanji="略歴" english="About" />
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', maxWidth: '520px', margin: '0 auto' }}>
-        {/* Stylised portrait — woodblock print frame */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          {/* Decorative corner marks */}
           <div style={{
             position: 'absolute', top: '-6px', left: '-6px',
             width: '18px', height: '18px',
@@ -43,6 +41,8 @@ export function AboutSection() {
           <img
             src="/images/Rupesh_Pandey_Stylised.webp"
             alt="Rupesh Pandey"
+            loading="lazy"
+            decoding="async"
             style={{
               height: 'clamp(180px, 26vh, 240px)',
               width: 'auto',

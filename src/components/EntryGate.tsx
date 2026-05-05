@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 
 interface EntryGateProps {
   onEnter: () => void
@@ -13,7 +13,7 @@ const LANTERN_RED = '#C42020'
 const LANTERN_CORE = '#FF6B5B'
 const AMBER = '#C4A77D'
 
-export function EntryGate({ onEnter, ready = false }: EntryGateProps) {
+function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
   const [phase, setPhase] = useState<Phase>('appear')
   const timeoutsRef = useRef<number[]>([])
 
@@ -360,3 +360,5 @@ export function EntryGate({ onEnter, ready = false }: EntryGateProps) {
     </div>
   )
 }
+
+export const EntryGate = memo(EntryGateComponent)

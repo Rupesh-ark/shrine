@@ -1,6 +1,7 @@
 rupeshpandey.dev {
 	root * /srv/site
 	file_server
+	encode gzip zstd
 	try_files {path} /index.html
 
 	# No-cache for HTML (SPA navigation)
@@ -13,7 +14,7 @@ rupeshpandey.dev {
 	@assets {
 		path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot *.otf *.webp *.glb *.gltf *.mp3 *.wasm
 	}
-	header @assets Cache-Control "public, immutable"
+	header @assets Cache-Control "public, immutable, max-age=31536000"
 }
 
 www.rupeshpandey.dev {

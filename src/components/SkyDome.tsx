@@ -77,7 +77,6 @@ function createStarfieldTexture() {
     ctx.fill()
   }
 
-  // Milky Way band — denser, fainter, near the equator
   const mwCount = 8000
   for (let i = 0; i < mwCount; i++) {
     const x = rng() * W
@@ -124,7 +123,6 @@ function createStarfieldTexture() {
   return texture
 }
 
-/* ───────── shooting star logic (from old Stars.tsx) ───────── */
 
 export function SkyDome({ progress }: SkyDomeProps) {
   const texture = useMemo(() => createStarfieldTexture(), [])
@@ -200,7 +198,6 @@ export function SkyDome({ progress }: SkyDomeProps) {
 
   return (
     <group>
-      {/* Sky sphere — large enough to never clip the camera */}
       <mesh ref={domeRef} renderOrder={-1000}>
         <sphereGeometry args={[60, 64, 64]} />
         <meshBasicMaterial
@@ -213,7 +210,6 @@ export function SkyDome({ progress }: SkyDomeProps) {
         />
       </mesh>
 
-      {/* Shooting star head */}
       <mesh ref={shootingStarRef} visible={false}>
         <sphereGeometry args={[0.035, 8, 8]} />
         <meshBasicMaterial
@@ -226,7 +222,6 @@ export function SkyDome({ progress }: SkyDomeProps) {
         />
       </mesh>
 
-      {/* Shooting star trail */}
       <mesh ref={shootingTrailRef} visible={false}>
         <sphereGeometry args={[0.02, 8, 8]} />
         <meshBasicMaterial

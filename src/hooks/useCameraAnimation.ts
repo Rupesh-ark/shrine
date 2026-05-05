@@ -31,7 +31,7 @@ function blendProjectionMatrices(
   return target
 }
 
-export function useCameraAnimation(progress: number) {
+export function useCameraAnimation(progress: number, entered?: boolean) {
   const [houseBounds, setHouseBounds] = useState<THREE.Box3 | null>(null)
   const scrollFocusRef = useRef<THREE.Vector3 | null>(null)
   const orthoProjectionRef = useRef(new THREE.Matrix4())
@@ -79,16 +79,15 @@ export function useCameraAnimation(progress: number) {
   }, [])
 
   useFrame((state, delta) => {
+    // Pause camera animation while gate overlay is visible.
+    // The model still loads in the background; we just skip per-frame
+    // camera movement and CSS updates that compete with the gate CSS transition.
+    if (!entered) return
+
     timeRef.current += delta
     const t = timeRef.current
     const focus = scrollFocusRef.current
     const camera = state.camera as THREE.PerspectiveCamera
-
-    // Debug: log camera position at progress = 0 on first few frames
-    if (progress === 0 && timeRef.current < 0.1) {
-      // eslint-disable-next-line no-console
-      console.log('Camera pos:', camera.position.toArray(), 'houseBounds:', houseBounds?.min.y.toFixed(2) ?? 'null')
-    }
 
     const entryT = THREE.MathUtils.smoothstep(progress, 0.0, 0.55)
     const portalT = THREE.MathUtils.smoothstep(progress, 0.56, 0.84)

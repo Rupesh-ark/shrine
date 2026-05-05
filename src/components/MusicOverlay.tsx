@@ -1,9 +1,11 @@
+import { memo } from 'react'
+
 interface MusicOverlayProps {
   muted: boolean
   onToggleMute: () => void
 }
 
-export function MusicOverlay({ muted, onToggleMute }: MusicOverlayProps) {
+function MusicOverlayComponent({ muted, onToggleMute }: MusicOverlayProps) {
   return (
     <button
       onClick={onToggleMute}
@@ -78,3 +80,5 @@ export function MusicOverlay({ muted, onToggleMute }: MusicOverlayProps) {
     </button>
   )
 }
+
+export const MusicOverlay = memo(MusicOverlayComponent)

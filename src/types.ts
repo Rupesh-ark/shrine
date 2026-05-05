@@ -74,6 +74,7 @@ export interface SkyDomeProps {
 export interface SceneProps {
   progress: number
   onHouseReady?: () => void
+  entered?: boolean
 }
 
 // Hook types

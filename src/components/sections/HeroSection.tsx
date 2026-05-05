@@ -13,7 +13,6 @@ export function HeroSection() {
       scrollSnapAlign: 'start', padding: '48px 40px',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Large kanji watermark */}
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
@@ -23,7 +22,6 @@ export function HeroSection() {
         lineHeight: 1, whiteSpace: 'nowrap',
       }}>履歴書</div>
 
-      {/* Top seal */}
       <div style={{ position: 'absolute', top: '7%', right: '8%', animation: 'seal-stamp 0.6s ease-out 0.4s both' }}>
         <Seal text="承認" rotate={-6} size={68} />
       </div>
@@ -31,7 +29,6 @@ export function HeroSection() {
         <KamonWatermark />
       </div>
 
-      {/* Name */}
       <div style={{ animation: 'ink-fade-in 0.7s ease-out 0.1s both', textAlign: 'center', marginBottom: '4px' }}>
         <p style={{
           fontFamily: JP_SERIF,
@@ -45,7 +42,6 @@ export function HeroSection() {
           color: INK_BLACK, margin: 0,
           fontWeight: '700', letterSpacing: '-0.5px', lineHeight: 1.05,
         }}>Rupesh Pandey</h1>
-        {/* Ink underline */}
         <div style={{
           height: '2px', background: CRIMSON, borderRadius: '1px',
           marginTop: '8px', transformOrigin: 'left center',
@@ -89,7 +85,6 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Bottom corner ornament */}
       <div style={{ position: 'absolute', bottom: '6%', left: '8%', opacity: 0.22 }}>
         <KamonWatermark />
       </div>

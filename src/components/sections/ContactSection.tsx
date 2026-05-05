@@ -59,7 +59,6 @@ export function ContactSection() {
         marginTop: '18px', opacity: 0.6, letterSpacing: '2px',
       }}>Edinburgh, UK · Thank you for visiting</p>
 
-      {/* Exit scroll — back to scene */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         style={{

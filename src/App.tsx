@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+import { lazy, startTransition, Suspense, useCallback, useRef, useState } from 'react'
 import { useScrollProgress } from './hooks/useScrollProgress'
 import { ScrollOverlay } from './components/ScrollOverlay'
 import { HeroOverlay } from './components/HeroOverlay'
@@ -9,8 +9,6 @@ import { GRAIN_URL } from './constants/grain'
 
 const CanvasScene = lazy(() => import('./components/CanvasScene'))
 
-// Start downloading the heavy 3D chunk in the background immediately
-// so it's likely ready by the time the user clicks "Enter"
 void import('./components/CanvasScene')
 
 function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserRef: React.RefObject<AnalyserNode | null>, muted: boolean) {
@@ -46,14 +44,21 @@ export function App() {
   const audioStartedRef = useRef(false)
   const progress = useScrollProgress(800)
 
-  const handleEnter = () => {
-    if (!entered) setEntered(true)
+  const handleEnter = useCallback(() => {
+    requestAnimationFrame(() => {
+      startTransition(() => {
+        setEntered(true)
+      })
+    })
+
     if (audioStartedRef.current) return
     audioStartedRef.current = true
-    initAudio(audioRef, analyserRef, muted)
-  }
+    requestAnimationFrame(() => {
+      initAudio(audioRef, analyserRef, muted)
+    })
+  }, [muted])
 
-  const handleToggleMute = () => {
+  const handleToggleMute = useCallback(() => {
     setMuted((prev) => {
       const next = !prev
       if (audioRef.current) {
@@ -61,13 +66,13 @@ export function App() {
       }
       return next
     })
-  }
+  }, [])
 
   return (
     <div style={{ position: 'fixed', inset: 0, isolation: 'isolate' }}>
       <EntryGate onEnter={handleEnter} ready={houseReady} />
       <Suspense fallback={null}>
-        <CanvasScene progress={progress} onHouseReady={() => setHouseReady(true)} />
+        <CanvasScene progress={progress} onHouseReady={() => setHouseReady(true)} entered={entered} />
       </Suspense>
       <div
         aria-hidden
@@ -83,7 +88,6 @@ export function App() {
         }}
       />
 
-      {/* Bottom gradient to hide ground plane — fades as we scroll */}
       <div
         aria-hidden
         style={{

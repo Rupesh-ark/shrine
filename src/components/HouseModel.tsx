@@ -15,14 +15,12 @@ import { RedSpirits } from './Atmosphere'
 import { TableWithCushions, TABLE_OFFSET_Z } from './Table'
 import { SCROLL_LIFT, SCROLL_OFFSET_X, SCROLL_OFFSET_Z, TableScroll } from './TableScroll'
 
-// Cache-bust the model on every build so browsers don't use stale GLB files
 const CACHE_BUST = `?v=${import.meta.env.VITE_BUILD_HASH || Date.now()}`
 const MODEL_URL = `/models/final_house/house.glb${CACHE_BUST}`
 const TARGET_HEIGHT = 3.8
 const GROUND_Y = -1.38
 const TARGET_FRONT_Z = 0.3
 
-/** Exact-name matches for one-offs and small groups */
 const EXACT_COLORS: Record<string, MaterialRule> = {
   // Big stone lantern bases (tōrō)
   zen_shrine_001_01: { color: '#4A4A50', roughness: 0.92, metalness: 0.05 },
@@ -44,29 +42,19 @@ const EXACT_COLORS: Record<string, MaterialRule> = {
   zen_shrine_ground_001_03: { color: '#A09890', roughness: 0.95, metalness: 0.0, variation: 0.1 },
 }
 
-/** Prefix matches for large numbered families */
 const PREFIX_COLORS: PrefixMaterialRule[] = [
   // Small hanging paper lanterns
   { prefix: 'cocoonimo_lantern_round', color: '#C4322D', roughness: 1, metalness: 0.0 },
 
-  // Roof — glazed ceramic tiles
   { prefix: 'zen_shrine_roof', color: '#1A2230', roughness: 0.85, metalness: 0.02, variation: 0.12 },
-  // Oni / demon ornaments — polished gold
   { prefix: 'oni', color: '#C9A24A', emissive: '#D7B86A', emissiveIntensity: 0.12, roughness: 0.48, metalness: 0.55 },
-  // Rocks / stones
   { prefix: 'shrine_rocks', color: '#A2978A', roughness: 0.97, metalness: 0.0, variation: 0.14 },
-  // Frame tops — dark rich structural wood
   { prefix: 'zen_shrine_frame_top', color: '#4C3020', roughness: 0.9, metalness: 0.0, variation: 0.16 },
-  // Floor — lighter weathered deck wood
   { prefix: 'zen_shrine_floor', color: '#A28263', roughness: 0.82, metalness: 0.0, variation: 0.2 },
-  // Railing / reiling — medium aged wood
   { prefix: 'zen_shrine_reiling', color: '#73523A', roughness: 0.88, metalness: 0.0, variation: 0.15 },
   { prefix: 'shrine_veranda_reiling', color: '#73523A', roughness: 0.88, metalness: 0.0, variation: 0.15 },
-  // Stairs — worn medium wood
   { prefix: 'zen_shrine_stairs', color: '#826243', roughness: 0.82, metalness: 0.0, variation: 0.16 },
-  // Doors — wooden frame
   { prefix: 'shoji_door', color: '#75553D', roughness: 0.88, metalness: 0.0 },
-  // Tatami — straw mat
   { prefix: 'nw_tatami', color: '#D1BF91', roughness: 0.94, metalness: 0.0, variation: 0.12 },
 ]
 
@@ -82,7 +70,6 @@ function hashString(str: string): number {
 function varyColor(baseColor: THREE.Color, amount: number, seed: number): THREE.Color {
   const c = baseColor.clone()
   const rng = ((seed * 9301 + 49297) % 233280) / 233280 - 0.5
-  // More visible variation — shift hue slightly and vary brightness
   const hueShift = rng * amount * 0.15
   const brightShift = rng * amount * 0.25
   c.r = Math.max(0, Math.min(1, c.r + hueShift + brightShift))
@@ -93,16 +80,13 @@ function varyColor(baseColor: THREE.Color, amount: number, seed: number): THREE.
 
 function getMeshColor(name: string): MaterialRule | undefined {
   const lower = name.toLowerCase()
-
-  // Special case: shoji door paper panels (any name starting with 'shoji_door' and ending with '_02')
+  //because of so many small compontens of that mesh with that name.
   if (lower.startsWith('shoji_door') && lower.endsWith('_02')) {
     return { color: '#E8DCC8', roughness: 0.95, metalness: 0.0, opacity: 0.82 }
   }
 
-  // 1. Exact match
   if (lower in EXACT_COLORS) return EXACT_COLORS[lower]
 
-  // 2. Prefix match (only for genuine families)
   for (const rule of PREFIX_COLORS) {
     if (lower.startsWith(rule.prefix)) return rule
   }
@@ -193,7 +177,6 @@ function animateScreenParticles(
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, w, h)
 
-  // Slow drifting nebula clouds
   ctx.globalCompositeOperation = 'screen'
   for (let i = 0; i < 3; i++) {
     const nx = ((Math.sin(t * 0.08 + i * 2.1) * 0.5 + 0.5) * w * 1.4) - w * 0.2
@@ -251,14 +234,12 @@ function animateScreenParticles(
     ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2)
     ctx.fill()
 
-    // Bright core
      
     ctx.fillStyle = `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha)})`
     ctx.beginPath()
     ctx.arc(p.x, p.y, p.r * 0.8, 0, Math.PI * 2)
     ctx.fill()
 
-    // White hot center
      
     ctx.fillStyle = `rgba(255, 255, 255, ${String(alpha * 0.9)})`
     ctx.beginPath()
@@ -266,7 +247,6 @@ function animateScreenParticles(
     ctx.fill()
   }
 
-  // Occasional bright sparkle bursts
   const sparkleCount = 4
   for (let i = 0; i < sparkleCount; i++) {
     const sx = ((Math.sin(t * 0.3 + i * 3.7) * 0.5 + 0.5) * w * 0.8) + w * 0.1
@@ -370,18 +350,14 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
       }
     })
 
-    // Collect door meshes for animation
-    // GLB has doors in CLOSED position; compute their OPEN positions
-    // DO NOT mutate mesh.position here — only capture target positions
+    
     const doors: { mesh: Mesh; closedX: number; openX: number }[] = []
     const SLIDE_DISTANCE = 0.35
     scene.traverse((obj: THREE.Object3D) => {
       if (obj.type !== 'Mesh') return
       const mesh = obj as Mesh
       const name = mesh.name.toLowerCase()
-      // Use name prefix to determine left/right, NOT position
-      // shoji_door_002* = left door → opens left (-X)
-      // shoji_door_003* = right door → opens right (+X)
+
       if (name.startsWith('shoji_door_002')) {
         const closedX = mesh.position.x
         const openX = closedX - SLIDE_DISTANCE
@@ -394,7 +370,6 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
     })
     doorRefs.current = doors
 
-    // The paper panels are the meshes ending in _02 within each door group
     const screenMeshes: THREE.Mesh[] = []
     scene.traverse((obj: THREE.Object3D) => {
       if (obj.type !== 'Mesh') return
@@ -528,8 +503,6 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
 
       setLanternLights(lights)
 
-      // Extract oni / roof ornament positions for red flame spirits
-      // zen_shrine_roof_001_05 mesh contains 4 oni ornaments at these local positions:
       const ORNAMENT_LOCALS: [number, number, number][] = [
         [-4.2429, 4.4451, -4.5121], // back-left
         [-4.2429, 4.4451, 4.5121],  // front-left
@@ -553,13 +526,11 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
 
       setOniPositions(oniPositionsExtracted)
 
-      // Compute table floor Y from tatami mesh positions
       const tatamiY: number | undefined = findLowestTatamiY(scene, groupRef.current, temp)
       if (tatamiY !== undefined) {
         setTableFloorY(tatamiY)
       }
 
-      // Compute house center Z for table placement
       const boundsForTable = hasVisualBounds.value ? visualBounds : worldBounds
       const centerPos = new Vector3()
       boundsForTable.getCenter(centerPos)
@@ -578,18 +549,15 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
     }
 
     return () => {
-      // Reset scene transforms so StrictMode re-runs are deterministic
       scene.position.set(0, 0, 0)
       scene.scale.setScalar(1)
     }
   }, [onBounds, onScrollFocus, scene])
 
-  // Animate shoji doors: start closed, open as we scroll
   useFrame((state) => {
     const openProgress = Math.min(1, Math.max(0, progress / 0.4))
     animateDoors(doorRefs.current, openProgress)
 
-    // Update screen animation on shoji door panels
     const canvas = screenCanvasRef.current
     const texture = screenTextureRef.current
     const particles = screenParticlesRef.current
@@ -611,7 +579,6 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
           decay={2}
         />
       ))}
-      {/* Pagoda top / oni rim light */}
       <pointLight
         position={[0, 2.8, 0]}
         intensity={1.35}

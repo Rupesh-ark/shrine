@@ -9,10 +9,8 @@ export function SceneLighting() {
 
       <spotLight position={[0, 2.6, 2.4]} angle={0.58} penumbra={0.82} intensity={3.1} color="#FFC980" distance={12} />
 
-      {/* Roof rim light — silhouettes the dark tiles against the sky */}
       <spotLight position={[0, 0.2, 4]} angle={1.1} penumbra={0.9} intensity={1.55} color="#B8D0F0" distance={18} />
 
-      {/* Roof fill from above */}
       <pointLight position={[0, 5.1, 0]} intensity={0.82} color="#FFDDB0" distance={13} />
 
       <fog attach="fog" args={['#12182a', 2.0, 20]} />

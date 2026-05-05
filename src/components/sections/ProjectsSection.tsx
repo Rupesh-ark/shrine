@@ -24,7 +24,6 @@ export function ProjectsSection() {
               transition: 'width 0.6s ease',
             }} />
 
-            {/* Year — subtle, floating */}
             <span style={{
               position: 'absolute', top: '0px', right: '0px',
               fontFamily: JP_SERIF,
@@ -89,7 +88,6 @@ export function ProjectsSection() {
               lineHeight: 1.65, margin: '0 0 12px',
             }}>{proj.desc}</p>
 
-            {/* Hanko-style tags */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {proj.tags.map(t => (
                 <span key={t} style={{
