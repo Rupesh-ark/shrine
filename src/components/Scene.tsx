@@ -1,9 +1,10 @@
-import { Suspense } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import { ContactShadows } from '@react-three/drei'
 import { useCameraAnimation } from '../hooks/useCameraAnimation'
 import type { SceneProps } from '../types'
 import { BlueSpirits, Fireflies } from './Atmosphere'
 import { HouseModel } from './HouseModel'
+import { ShaderPrecompiler } from './ShaderPrecompiler'
 import { SkyDome } from './SkyDome'
 import { FallingParticles } from './Particles'
 import { GroundMist } from './Mist'
@@ -13,6 +14,12 @@ const GROUND_HEIGHT = 6
 
 export function Scene({ progress, onHouseReady, entered }: SceneProps) {
   const { groundTopY, groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress, entered)
+  const [houseReady, setHouseReady] = useState(false)
+
+  const handleHouseReady = useCallback(() => {
+    setHouseReady(true)
+    onHouseReady?.()
+  }, [onHouseReady])
 
   return (
     <>
@@ -45,8 +52,10 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       </mesh>
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={onHouseReady} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={handleHouseReady} />
       </Suspense>
+
+      <ShaderPrecompiler enabled={houseReady} />
 
       <ContactShadows
         position={[0, overlayBaseY, 0]}
