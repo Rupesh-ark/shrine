@@ -68,7 +68,7 @@ export function App() {
     <div style={{ position: 'fixed', inset: 0, isolation: 'isolate' }}>
       <EntryGate onEnter={handleEnter} />
       <Canvas
-        camera={{ position: [0, 2.45, 5], fov: getFov() }}
+        camera={{ position: [0, 2.85, 4], fov: getFov() }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, powerPreference: 'high-performance', premultipliedAlpha: false }}
         onCreated={({ gl }) => {
