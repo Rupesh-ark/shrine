@@ -1,4 +1,4 @@
-import { JP_SERIF, SERIF } from '../../constants/fonts'
+import { SERIF } from '../../constants/fonts'
 import { CRIMSON, DARK_WOOD, DEEP_BROWN } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
 
@@ -77,17 +77,6 @@ export function AboutSection() {
             <span style={{ color: DARK_WOOD, fontStyle: 'italic' }}>Heriot-Watt University</span>,
             expected 2026. I bridge big-picture thinking with hands-on execution.
           </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {['Edinburgh, UK', 'MSc 2026', 'Bizom · 3 yrs', 'Builder'].map(tag => (
-            <span key={tag} style={{
-              fontFamily: JP_SERIF,
-              fontSize: '11px', color: DARK_WOOD,
-              border: '1px solid rgba(92,74,42,0.35)', padding: '4px 14px',
-              letterSpacing: '1px',
-            }}>{tag}</span>
-          ))}
         </div>
       </div>
     </section>

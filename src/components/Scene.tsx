@@ -62,9 +62,9 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       <ContactShadows
         position={[0, overlayBaseY, 0]}
         opacity={0.72}
-        scale={36}
-        blur={3.5}
-        far={5}
+        scale={24}
+        blur={2}
+        far={4}
         color="#06090d"
       />
 

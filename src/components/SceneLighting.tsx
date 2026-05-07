@@ -11,8 +11,6 @@ export function SceneLighting() {
 
       <spotLight position={[0, 0.2, 4]} angle={1.1} penumbra={0.9} intensity={1.55} color="#B8D0F0" distance={18} />
 
-      <pointLight position={[0, 5.1, 0]} intensity={0.82} color="#FFDDB0" distance={13} />
-
       <fog attach="fog" args={['#12182a', 2.0, 20]} />
     </>
   )

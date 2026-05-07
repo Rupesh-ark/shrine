@@ -287,6 +287,7 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const screenTextureRef = useRef<THREE.CanvasTexture | null>(null)
   const screenParticlesRef = useRef<ScreenParticle[]>([])
+  const lastScreenUpdateRef = useRef(0)
 
   useEffect(() => {
     onReady?.()
@@ -491,7 +492,7 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
 
       const clustered = dedupePositions(
         rawPositions.map((r) => r.pos),
-        0.6,
+        1.2,
       )
 
       const lights = clustered.map((pos) => ({
@@ -562,6 +563,12 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
     const texture = screenTextureRef.current
     const particles = screenParticlesRef.current
     if (!canvas || !texture || particles.length === 0) return
+
+    // Throttle 2D canvas animation to ~15 FPS to reduce main-thread pressure
+    const now = performance.now()
+    if (now - lastScreenUpdateRef.current < 67) return
+    lastScreenUpdateRef.current = now
+
     animateScreenParticles(particles, state.clock.elapsedTime, canvas, texture)
   })
 
