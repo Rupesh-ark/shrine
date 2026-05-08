@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { GRAIN_URL } from '../constants/grain'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
@@ -36,15 +36,13 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   const revealStart = 0.88
   const revealEnd = 1
   const revealProgress = Math.min(1, Math.max(0, (progress - revealStart) / (revealEnd - revealStart)))
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
   const isFullyRevealed = revealProgress >= 1
+  const isVisible = progress >= 0.85
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const thumbRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
   const [activeSection, setActiveSection] = useState(0)
-  const touchStartRef = useRef({ y: 0, scrollY: 0, timestamp: 0 })
-  const velocityRef = useRef(0)
 
   useEffect(() => {
     const container = scrollRef.current
@@ -66,15 +64,36 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   }, [revealProgress])
 
   useEffect(() => {
-    document.body.style.overflow = isFullyRevealed ? 'hidden' : ''
-    document.documentElement.style.overflow = isFullyRevealed ? 'hidden' : ''
-    document.body.style.touchAction = isFullyRevealed ? 'none' : ''
-    return () => {
-      document.body.style.overflow = ''
-      document.documentElement.style.overflow = ''
-      document.body.style.touchAction = ''
+    if (!isVisible) return
+
+    const el = scrollRef.current
+    if (!el) return
+
+    let startY = 0
+    let startScrollTop = 0
+
+    const onTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY
+      startScrollTop = el.scrollTop
     }
-  }, [isFullyRevealed])
+
+    const onTouchMove = (e: TouchEvent) => {
+      const deltaY = startY - e.touches[0].clientY
+      const atTop = startScrollTop <= 0 && deltaY < 0
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight && deltaY > 0
+      if (atTop || atBottom) return
+      e.preventDefault()
+      el.scrollTop = startScrollTop + deltaY
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [isVisible])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -103,39 +122,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
     }
   }, [])
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0]
-    touchStartRef.current = {
-      y: touch.clientY,
-      scrollY: scrollRef.current?.scrollTop ?? 0,
-      timestamp: Date.now(),
-    }
-    velocityRef.current = 0
-  }, [])
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const el = scrollRef.current
-    if (!el) return
-    const touch = e.touches[0]
-    const start = touchStartRef.current
-    const deltaY = start.y - touch.clientY
-    const newScrollTop = start.scrollY + deltaY
-    el.scrollTop = newScrollTop
-    const dt = Date.now() - start.timestamp || 1
-    velocityRef.current = deltaY / dt * 16
-  }, [])
-
-  const handleTouchEnd = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const v = velocityRef.current
-    if (Math.abs(v) > 0.5) {
-      const target = el.scrollTop + v * 8
-      el.scrollTo({ top: target, behavior: 'smooth' })
-    }
-  }, [])
-
-  if (progress < 0.85) return null
+  if (!isVisible) return null
 
   const eased = 1 - Math.pow(1 - revealProgress, 3)
   const clipRadius = eased * 145
@@ -162,7 +149,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
             background: '#1E160E',
             overflow: 'hidden',
           }),
-      pointerEvents: revealProgress > 0.95 ? 'auto' : 'none',
+      pointerEvents: 'auto',
     }}>
       {/* Background layers */}
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(64,44,28,0.7) 0%, rgba(30,22,14,0.95) 70%, #100B06 100%)', pointerEvents: 'none' }} />
@@ -192,6 +179,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
 
         {/* Paper body */}
         <div
+          ref={scrollRef}
           style={{
             flex: 1,
             minHeight: 0,
@@ -201,12 +189,12 @@ export function ScrollOverlay({ progress }: { progress: number }) {
             overflowX: 'hidden',
             margin: '2px 0',
             boxShadow: 'inset 0 0 60px rgba(120,100,70,0.18)',
-            overscrollBehaviorY: 'contain',
+            overscrollBehavior: 'contain',
             touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
-            isolation: 'isolate',
+            willChange: 'transform',
           }}
         >
           {/* Paper grain overlay */}
@@ -220,20 +208,13 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '8px', background: 'linear-gradient(to right, rgba(0,0,0,0.08), transparent)', pointerEvents: 'none', zIndex: 2 }} />
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '8px', background: 'linear-gradient(to left, rgba(0,0,0,0.08), transparent)', pointerEvents: 'none', zIndex: 2 }} />
 
-          {/* Touch scroll area - captures all touch events */}
-          <div
-            ref={scrollRef}
-            onTouchStart={isMobile ? handleTouchStart : undefined}
-            onTouchMove={isMobile ? handleTouchMove : undefined}
-            onTouchEnd={isMobile ? handleTouchEnd : undefined}
-            style={{
-              position: 'relative',
-              zIndex: 3,
-              padding: '0 40px',
-            }}
-          >
+          <div style={{
+            position: 'relative',
+            zIndex: 3,
+            padding: '0 40px',
+          }}>
             {SECTION_COMPONENTS.map((Section, i) => (
-              <div key={i} ref={el => { sectionRefs.current[i] = el }} style={isMobile ? undefined : { scrollSnapAlign: 'start' }}>
+              <div key={i} ref={el => { sectionRefs.current[i] = el }} style={{ scrollSnapAlign: 'start' }}>
                 <Section />
               </div>
             ))}
