@@ -1,9 +1,10 @@
 import { JP_SERIF, DISPLAY, SERIF } from '../../constants/fonts'
 import { CRIMSON, DARK_WOOD, DEEP_BROWN, PARCHMENT } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
+import { memo } from 'react'
 import { Seal } from '../scroll/Seal'
 
-export function ContactSection() {
+export const ContactSection = memo(function ContactSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -91,4 +92,4 @@ export function ContactSection() {
       </button>
     </section>
   )
-}
+})

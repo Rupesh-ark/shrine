@@ -103,6 +103,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
         {/* Paper body */}
         <div
           ref={scrollRef}
+          className="scroll-paper"
           style={{
             flex: 1,
             background: 'linear-gradient(160deg, #F7F0DC 0%, #EDE4CC 40%, #E6DAC0 100%)',
@@ -110,6 +111,8 @@ export function ScrollOverlay({ progress }: { progress: number }) {
             margin: '2px 0',
             boxShadow: 'inset 0 0 60px rgba(120,100,70,0.18)',
             scrollSnapType: 'y mandatory', overscrollBehavior: 'contain',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(139,26,26,0.25) transparent',
           }}
         >
           {/* Paper grain overlay */}
@@ -141,6 +144,22 @@ export function ScrollOverlay({ progress }: { progress: number }) {
 
         <WoodBar position="bottom" />
       </div>
+      <style>{`
+        .scroll-paper::-webkit-scrollbar {
+          width: 5px;
+        }
+        .scroll-paper::-webkit-scrollbar-track {
+          background: transparent;
+          border-left: 1px solid rgba(139,26,26,0.06);
+        }
+        .scroll-paper::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, rgba(139,26,26,0.18), rgba(139,26,26,0.30));
+          border-radius: 3px;
+        }
+        .scroll-paper::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, rgba(139,26,26,0.28), rgba(139,26,26,0.42));
+        }
+      `}</style>
     </div>
   )
 }

@@ -1,12 +1,13 @@
 import { DISPLAY, SERIF } from '../../constants/fonts'
 import { CRIMSON, DARK_WOOD, INK_BLACK, DEEP_BROWN } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
+import { memo } from 'react'
 import { SKILLS } from './data'
 
 const LEVEL_SIZE = ['12px', '14px', '16px']
 const LEVEL_OPACITY = [0.65, 0.82, 1]
 
-export function SkillsSection() {
+export const SkillsSection = memo(function SkillsSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -49,4 +50,4 @@ export function SkillsSection() {
       </div>
     </section>
   )
-}
+})

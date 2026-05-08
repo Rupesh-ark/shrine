@@ -38,6 +38,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
   const perspectiveProjectionRef = useRef(new THREE.Matrix4())
   const blendedProjectionRef = useRef(new THREE.Matrix4())
   const timeRef = useRef(0)
+  const lastCssUpdateRef = useRef(0)
 
   const handleBounds = useCallback((bounds: THREE.Box3) => {
     setHouseBounds(bounds.clone())
@@ -169,14 +170,19 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     camera.projectionMatrixInverse.copy(blendedProjectionRef.current).invert()
 
     if (focus) {
-      const projected = focus.clone().project(state.camera)
-      const projectedOriginX = THREE.MathUtils.clamp((projected.x * 0.5 + 0.5) * 100, 0, 100)
-      const projectedOriginY = THREE.MathUtils.clamp(((-projected.y) * 0.5 + 0.5) * 100, 0, 100)
-      const centerT = THREE.MathUtils.smoothstep(progress, 0.5, 0.85)
-      const originX = THREE.MathUtils.lerp(projectedOriginX, 50, centerT)
-      const originY = THREE.MathUtils.lerp(projectedOriginY, 50, centerT)
-      document.documentElement.style.setProperty('--resume-origin-x', `${String(originX)}%`)
-      document.documentElement.style.setProperty('--resume-origin-y', `${String(originY)}%`)
+      const now = performance.now()
+      if (now - lastCssUpdateRef.current > 50) {
+        lastCssUpdateRef.current = now
+
+        const projected = focus.clone().project(state.camera)
+        const projectedOriginX = THREE.MathUtils.clamp((projected.x * 0.5 + 0.5) * 100, 0, 100)
+        const projectedOriginY = THREE.MathUtils.clamp(((-projected.y) * 0.5 + 0.5) * 100, 0, 100)
+        const centerT = THREE.MathUtils.smoothstep(progress, 0.5, 0.85)
+        const originX = THREE.MathUtils.lerp(projectedOriginX, 50, centerT)
+        const originY = THREE.MathUtils.lerp(projectedOriginY, 50, centerT)
+        document.documentElement.style.setProperty('--resume-origin-x', `${String(originX)}%`)
+        document.documentElement.style.setProperty('--resume-origin-y', `${String(originY)}%`)
+      }
     }
   })
 

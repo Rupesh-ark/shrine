@@ -1,10 +1,11 @@
+import { memo } from 'react'
 import { JP_SERIF, DISPLAY, SERIF } from '../../constants/fonts'
 import { CRIMSON, DARK_WOOD, INK_BLACK, MEDIUM_WOOD, DEEP_BROWN } from '../../constants/colors'
 import { BrushDivider } from '../scroll/BrushDivider'
 import { KamonWatermark } from '../scroll/KamonWatermark'
 import { Seal } from '../scroll/Seal'
 
-export function HeroSection() {
+export const HeroSection = memo(function HeroSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -90,4 +91,4 @@ export function HeroSection() {
       </div>
     </section>
   )
-}
+})

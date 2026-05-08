@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
-import { ContactShadows } from '@react-three/drei'
+import { Bvh, ContactShadows } from '@react-three/drei'
 import { useCameraAnimation } from '../hooks/useCameraAnimation'
 import type { SceneProps } from '../types'
 import { BlueSpirits, Fireflies } from './Atmosphere'
@@ -24,7 +24,7 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
   }, [modelReady, shadersReady, onHouseReady])
 
   return (
-    <>
+    <Bvh firstHitOnly>
       <SceneLighting />
 
       <SkyDome progress={progress} />
@@ -72,6 +72,6 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       <BlueSpirits />
       <FallingParticles />
       <GroundMist />
-    </>
+    </Bvh>
   )
 }

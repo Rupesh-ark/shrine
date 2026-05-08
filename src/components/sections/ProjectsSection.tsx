@@ -1,9 +1,10 @@
 import { JP_SERIF, DISPLAY, SERIF } from '../../constants/fonts'
 import { CRIMSON, INK_BLACK, DEEP_BROWN, MEDIUM_WOOD } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
+import { memo } from 'react'
 import { PROJECTS } from './data'
 
-export function ProjectsSection() {
+export const ProjectsSection = memo(function ProjectsSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -105,4 +106,4 @@ export function ProjectsSection() {
       </div>
     </section>
   )
-}
+})

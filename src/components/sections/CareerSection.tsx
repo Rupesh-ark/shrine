@@ -2,9 +2,10 @@ import { JP_SERIF, DISPLAY, SERIF } from '../../constants/fonts'
 import { DARK_WOOD, INK_BLACK, DEEP_BROWN, MEDIUM_WOOD } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
 import { TimelineDot } from '../scroll/TimelineDot'
+import { memo } from 'react'
 import { ROLES } from './data'
 
-export function CareerSection() {
+export const CareerSection = memo(function CareerSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -57,4 +58,4 @@ export function CareerSection() {
       </div>
     </section>
   )
-}
+})

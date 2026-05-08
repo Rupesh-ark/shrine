@@ -64,9 +64,11 @@ export function ProgressOverlay({ progress }: ProgressOverlayProps) {
             top: 0,
             left: 0,
             width: '100%',
-            height: `${String(Math.round(progress * 100))}%`,
+            height: '100%',
+            transformOrigin: 'top',
+            transform: `scaleY(${String(Math.round(progress * 100) / 100)})`,
             background: 'linear-gradient(to bottom, rgba(196,167,125,0), rgba(196,167,125,0.6))',
-            transition: 'height 0.15s ease-out',
+            transition: 'transform 0.15s ease-out',
           }}
         />
         {/* Thumb / marker */}
@@ -74,14 +76,14 @@ export function ProgressOverlay({ progress }: ProgressOverlayProps) {
           style={{
             position: 'absolute',
             left: '50%',
-            top: `${String(Math.round(progress * 100))}%`,
-            transform: 'translate(-50%, -50%)',
+            top: 0,
+            transform: `translate(-50%, ${String(Math.round(progress * 100))}%)`,
             width: isMobile ? '4px' : '6px',
             height: isMobile ? '4px' : '6px',
             borderRadius: '50%',
             background: '#C4A77D',
             boxShadow: '0 0 8px rgba(196,167,125,0.5)',
-            transition: 'top 0.15s ease-out',
+            transition: 'transform 0.15s ease-out',
           }}
         />
       </div>

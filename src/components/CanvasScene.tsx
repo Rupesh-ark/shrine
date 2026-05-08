@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
+import { AdaptiveDpr, AdaptiveEvents, PerformanceMonitor, Preload } from '@react-three/drei'
 import { Scene } from './Scene'
 import { PostProcessing } from './PostProcessing'
 import type { SceneProps } from '../types'
@@ -13,10 +15,12 @@ function getCamera() {
 }
 
 export default function CanvasScene({ progress, onHouseReady, entered }: SceneProps) {
+  const [dpr, setDpr] = useState(1.5)
+
   return (
     <Canvas
       camera={{ position: [...getCamera().position], fov: getCamera().fov }}
-      dpr={[1, 1.5]}
+      dpr={[1, dpr]}
       gl={{ antialias: true, powerPreference: 'high-performance', premultipliedAlpha: false }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
@@ -25,8 +29,18 @@ export default function CanvasScene({ progress, onHouseReady, entered }: ScenePr
       }}
       style={{ position: 'fixed', inset: 0 }}
       frameloop={entered ? 'always' : 'never'}
+      performance={{ min: 0.5 }}
     >
       <color attach="background" args={['#111625']} />
+      <PerformanceMonitor
+        factor={1}
+        flipflops={3}
+        onChange={({ factor }) => setDpr(Math.max(0.75, Math.floor(0.75 + 1.25 * factor * 10) / 10))}
+        onFallback={() => setDpr(1)}
+      />
+      <AdaptiveDpr pixelated />
+      <AdaptiveEvents />
+      <Preload all />
       <Scene progress={progress} onHouseReady={onHouseReady} entered={entered} />
       <PostProcessing />
     </Canvas>

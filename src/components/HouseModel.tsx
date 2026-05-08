@@ -574,7 +574,7 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
 
   return (
     <group ref={groupRef} rotation={[0, 0, 0]}>
-      <Environment preset="night" environmentIntensity={0.26} />
+      <Environment files="/env/dikhololo_night_1k.hdr" environmentIntensity={0.26} />
       <primitive object={scene} />
       {lanternLights.map((light, index) => (
         <pointLight

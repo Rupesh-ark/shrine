@@ -1,8 +1,9 @@
 import { SERIF } from '../../constants/fonts'
 import { CRIMSON, DARK_WOOD, DEEP_BROWN } from '../../constants/colors'
+import { memo } from 'react'
 import { SectionHeader } from '../scroll/SectionHeader'
 
-export function AboutSection() {
+export const AboutSection = memo(function AboutSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -41,6 +42,8 @@ export function AboutSection() {
           <img
             src="/images/Rupesh_Pandey.webp"
             alt="Rupesh Pandey"
+            width={700}
+            height={686}
             loading="lazy"
             decoding="async"
             style={{
@@ -81,4 +84,4 @@ export function AboutSection() {
       </div>
     </section>
   )
-}
+})

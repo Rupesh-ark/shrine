@@ -1,9 +1,10 @@
 import { SERIF } from '../../constants/fonts'
 import { INK_BLACK, MEDIUM_WOOD } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
+import { memo } from 'react'
 import { EDUCATION } from './data'
 
-export function EducationSection() {
+export const EducationSection = memo(function EducationSection() {
   return (
     <section style={{
       height: '100%', minHeight: '100%',
@@ -32,4 +33,4 @@ export function EducationSection() {
       </div>
     </section>
   )
-}
+})
