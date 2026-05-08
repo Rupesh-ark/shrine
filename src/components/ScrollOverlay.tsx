@@ -61,6 +61,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   }, [revealProgress])
 
   const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, [])
+  const isFullyRevealed = revealProgress >= 1
 
   if (progress < 0.85) return null
 
@@ -81,6 +82,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
       pointerEvents: revealProgress > 0.95 ? 'auto' : 'none',
       background: '#1E160E',
       overflow: 'hidden',
+      ...(isFullyRevealed ? { display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}),
     }}>
       {/* Background layers */}
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(64,44,28,0.7) 0%, rgba(30,22,14,0.95) 70%, #100B06 100%)', pointerEvents: 'none' }} />
@@ -94,11 +96,16 @@ export function ScrollOverlay({ progress }: { progress: number }) {
         width: 'min(92vw, 720px)',
         height: 'min(92vh, 1100px)',
         display: 'flex', flexDirection: 'column',
-        position: 'absolute',
-        left: 'var(--resume-origin-x, 50%)', top: 'var(--resume-origin-y, 50%)',
-        transform: `translate(-50%, -50%) scale(${String(innerScale)})`,
-        transformOrigin: 'center',
-        opacity: revealProgress,
+        ...isFullyRevealed
+          ? { position: 'relative', opacity: 1 }
+          : {
+              position: 'absolute',
+              left: 'var(--resume-origin-x, 50%)',
+              top: 'var(--resume-origin-y, 50%)',
+              transform: `translate(-50%, -50%) scale(${String(innerScale)})`,
+              transformOrigin: 'center',
+              opacity: revealProgress,
+            },
         minHeight: 0,
       }}>
         <WoodBar position="top" />
@@ -119,6 +126,8 @@ export function ScrollOverlay({ progress }: { progress: number }) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(139,26,26,0.25) transparent',
+            userSelect: 'text',
+            willChange: 'scroll-position',
           }}
         >
           {/* Paper grain overlay */}
