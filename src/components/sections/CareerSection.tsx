@@ -24,7 +24,6 @@ export const CareerSection = memo(function CareerSection() {
             <div style={{
               padding: '14px 16px',
               background: i === 0 ? 'rgba(139,26,26,0.04)' : 'rgba(92,74,42,0.03)',
-              borderLeft: `2px solid ${i === 0 ? '#8B1A1A' : 'rgba(92,74,42,0.25)'}`,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px' }}>
                 <h3 style={{
