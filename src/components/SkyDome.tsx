@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { seededRandom } from '../utils/random'
@@ -208,44 +208,45 @@ export function SkyDome({ progress }: SkyDomeProps) {
   const { gl } = useThree()
 
   /* Nebula dome */
-  const nebulaMat = useMemo(() => {
-    return new THREE.ShaderMaterial({
-      vertexShader: NEBULA_VERTEX,
-      fragmentShader: NEBULA_FRAGMENT,
-      uniforms: {
-        uTime: { value: 0 },
-        uOpacity: { value: 0 },
-      },
-      side: THREE.BackSide,
-      depthWrite: false,
-      transparent: true,
-    })
-  }, [])
+  const nebulaMatRef = useRef<THREE.ShaderMaterial | null>(null)
+  nebulaMatRef.current ??= new THREE.ShaderMaterial({
+    vertexShader: NEBULA_VERTEX,
+    fragmentShader: NEBULA_FRAGMENT,
+    uniforms: {
+      uTime: { value: 0 },
+      uOpacity: { value: 0 },
+    },
+    side: THREE.BackSide,
+    depthWrite: false,
+    transparent: true,
+  })
 
   /* Star field */
-  const starData = useMemo(() => generateStarData(), [])
-  const starMat = useMemo(() => {
+  const starDataRef = useRef<ReturnType<typeof generateStarData> | null>(null)
+  starDataRef.current ??= generateStarData()
+
+  const starGeoRef = useRef<THREE.BufferGeometry | null>(null)
+  const starMatRef = useRef<THREE.ShaderMaterial | null>(null)
+  starGeoRef.current ??= (() => {
     const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(starData.positions, 3))
-    geo.setAttribute('aColor', new THREE.BufferAttribute(starData.colors, 3))
-    geo.setAttribute('aSize', new THREE.BufferAttribute(starData.sizes, 1))
-    geo.setAttribute('aPhase', new THREE.BufferAttribute(starData.phases, 1))
-    geo.setAttribute('aTwinkleSpeed', new THREE.BufferAttribute(starData.twinkleSpeeds, 1))
-
-    const mat = new THREE.ShaderMaterial({
-      vertexShader: STAR_VERTEX,
-      fragmentShader: STAR_FRAGMENT,
-      uniforms: {
-        uTime: { value: 0 },
-        uPixelRatio: { value: Math.min(gl.getPixelRatio(), 2) },
-      },
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
-
-    return { geo, mat }
-  }, [starData, gl])
+    geo.setAttribute('position', new THREE.BufferAttribute(starDataRef.current.positions, 3))
+    geo.setAttribute('aColor', new THREE.BufferAttribute(starDataRef.current.colors, 3))
+    geo.setAttribute('aSize', new THREE.BufferAttribute(starDataRef.current.sizes, 1))
+    geo.setAttribute('aPhase', new THREE.BufferAttribute(starDataRef.current.phases, 1))
+    geo.setAttribute('aTwinkleSpeed', new THREE.BufferAttribute(starDataRef.current.twinkleSpeeds, 1))
+    return geo
+  })()
+  starMatRef.current ??= new THREE.ShaderMaterial({
+    vertexShader: STAR_VERTEX,
+    fragmentShader: STAR_FRAGMENT,
+    uniforms: {
+      uTime: { value: 0 },
+      uPixelRatio: { value: Math.min(gl.getPixelRatio(), 2) },
+    },
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  })
 
   /* Shooting stars */
   const shootingState = useRef<ShootingState>({
@@ -264,10 +265,15 @@ export function SkyDome({ progress }: SkyDomeProps) {
   useFrame((_state, delta) => {
     const reveal = THREE.MathUtils.smoothstep(progress, 0.0, 0.22)
 
-    nebulaMat.uniforms.uTime.value += delta
-    nebulaMat.uniforms.uOpacity.value = reveal
-
-    starMat.mat.uniforms.uTime.value += delta
+    const nMat = nebulaMatRef.current
+    const sMat = starMatRef.current
+    if (nMat) {
+      ;(nMat.uniforms.uTime.value as number) += delta
+      nMat.uniforms.uOpacity.value = reveal
+    }
+    if (sMat) {
+      ;(sMat.uniforms.uTime.value as number) += delta
+    }
 
     const s = shootingState.current
     s.timer += delta
@@ -313,11 +319,11 @@ export function SkyDome({ progress }: SkyDomeProps) {
 
   return (
     <group>
-      <mesh renderOrder={-1000} material={nebulaMat}>
+      <mesh renderOrder={-1000} material={nebulaMatRef.current}>
         <sphereGeometry args={[60, 32, 32]} />
       </mesh>
 
-      <points geometry={starMat.geo} material={starMat.mat} renderOrder={-999} />
+      <points geometry={starGeoRef.current} material={starMatRef.current} renderOrder={-999} />
 
       <mesh ref={shootingStarRef} visible={false}>
         <sphereGeometry args={[0.035, 8, 8]} />

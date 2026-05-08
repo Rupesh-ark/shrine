@@ -24,20 +24,17 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         return ready ? 'idle' : 'waiting'
       })
     }, 800)
-    timeoutsRef.current.push(t)
+    const currentTimeouts = [...timeoutsRef.current, t]
+    timeoutsRef.current = currentTimeouts
     return () => {
-      timeoutsRef.current.forEach(clearTimeout)
+      currentTimeouts.forEach(clearTimeout)
     }
   }, [ready])
 
-  useEffect(() => {
-    if (ready && phase === 'waiting') {
-      setPhase('idle')
-    }
-  }, [ready, phase])
+  const effectivePhase: Phase = phase === 'waiting' && ready ? 'idle' : phase
 
   const handleClick = () => {
-    if (phase !== 'idle') return
+    if (effectivePhase !== 'idle') return
     onEnter()
     setPhase('spreading')
     timeoutsRef.current.push(setTimeout(() => { setPhase('filled'); }, 1200))
@@ -45,14 +42,21 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
     timeoutsRef.current.push(setTimeout(() => { setPhase('done'); }, 2800))
   }
 
-  if (phase === 'done') return null
+  if (effectivePhase === 'done') return null
 
-  const isSpreading = phase === 'spreading'
-  const isFilled = phase === 'filled'
-  const isFading = phase === 'fading'
-  const isIdle = phase === 'idle'
-  const isWaiting = phase === 'waiting'
-  const isAppearing = phase === 'appear'
+  const isSpreading = effectivePhase === 'spreading'
+  const isFilled = effectivePhase === 'filled'
+  const isFading = effectivePhase === 'fading'
+  const isIdle = effectivePhase === 'idle'
+  const isWaiting = effectivePhase === 'waiting'
+  const isAppearing = effectivePhase === 'appear'
+
+  const spreading = isSpreading || isFilled || isFading
+  const blotchScale = spreading ? 4 : 0
+  const secondaryScale = spreading ? 3.5 : 0
+  const tertiaryScale = spreading ? 3.2 : 0
+  const edgeScale = spreading ? 2.5 : 0
+  const dotScale = spreading ? 1 : 0
 
   return (
     <div
@@ -92,7 +96,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         top: '50%',
         width: '80vmin',
         height: '80vmin',
-        transform: `translate(-50%, -50%) scale(${isSpreading || isFilled || isFading ? 4 : 0})`,
+        transform: `translate(-50%, -50%) scale(${String(blotchScale)})`,
         background: `radial-gradient(circle at 45% 40%, ${SCENE_BG}ee 0%, ${SCENE_BG}dd 35%, ${SCENE_BG}aa 65%, transparent 100%)`,
         borderRadius: '43% 57% 52% 48% / 48% 43% 57% 52%',
         filter: 'blur(12px)',
@@ -107,7 +111,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         top: '45%',
         width: '60vmin',
         height: '60vmin',
-        transform: `translate(-50%, -50%) scale(${isSpreading || isFilled || isFading ? 3.5 : 0})`,
+        transform: `translate(-50%, -50%) scale(${String(secondaryScale)})`,
         background: `radial-gradient(circle at 55% 55%, ${SCENE_BG}ee 0%, ${SCENE_BG}cc 50%, transparent 100%)`,
         borderRadius: '58% 42% 48% 52% / 52% 58% 42% 48%',
         filter: 'blur(16px)',
@@ -122,7 +126,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         top: '55%',
         width: '55vmin',
         height: '55vmin',
-        transform: `translate(-50%, -50%) scale(${isSpreading || isFilled || isFading ? 3.2 : 0})`,
+        transform: `translate(-50%, -50%) scale(${String(tertiaryScale)})`,
         background: `radial-gradient(circle at 40% 45%, ${SCENE_BG}dd 0%, ${SCENE_BG}bb 60%, transparent 100%)`,
         borderRadius: '48% 52% 58% 42% / 42% 48% 52% 58%',
         filter: 'blur(20px)',
@@ -137,7 +141,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         top: '-10%',
         width: '70vmin',
         height: '50vmin',
-        transform: `translate(-50%, 0) scale(${isSpreading || isFilled || isFading ? 2.5 : 0})`,
+        transform: `translate(-50%, 0) scale(${String(edgeScale)})`,
         background: `radial-gradient(ellipse at center, ${SCENE_BG}dd 0%, transparent 70%)`,
         borderRadius: '50%',
         filter: 'blur(24px)',
@@ -152,7 +156,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         bottom: '-10%',
         width: '65vmin',
         height: '45vmin',
-        transform: `translate(-50%, 0) scale(${isSpreading || isFilled || isFading ? 2.5 : 0})`,
+        transform: `translate(-50%, 0) scale(${String(edgeScale)})`,
         background: `radial-gradient(ellipse at center, ${SCENE_BG}cc 0%, transparent 70%)`,
         borderRadius: '50%',
         filter: 'blur(28px)',
@@ -175,13 +179,13 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
           position: 'absolute',
           left: dot.x,
           top: dot.y,
-          width: `${dot.s * 24}px`,
-          height: `${dot.s * 24}px`,
-          transform: `translate(-50%, -50%) scale(${isSpreading || isFilled || isFading ? 1 : 0})`,
+          width: `${String(dot.s * 24)}px`,
+          height: `${String(dot.s * 24)}px`,
+          transform: `translate(-50%, -50%) scale(${String(dotScale)})`,
           background: SCENE_BG,
-          borderRadius: `${40 + (i % 3) * 10}% ${60 - (i % 3) * 10}% ${50 + (i % 2) * 10}% ${50 - (i % 2) * 10}%`,
+          borderRadius: `${String(40 + (i % 3) * 10)}% ${String(60 - (i % 3) * 10)}% ${String(50 + (i % 2) * 10)}% ${String(50 - (i % 2) * 10)}%`,
           filter: 'blur(1px)',
-          transition: `transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) ${dot.d + 0.3}s`,
+          transition: `transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) ${String(dot.d + 0.3)}s`,
           pointerEvents: 'none',
         }} />
       ))}

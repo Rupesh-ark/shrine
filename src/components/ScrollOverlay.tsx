@@ -83,7 +83,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
       const thumb = thumbRef.current
       if (!thumb) return
       const { scrollTop, scrollHeight, clientHeight } = el
-      const trackH = thumb.parentElement!.clientHeight
+      const trackH = thumb.parentElement?.clientHeight ?? 0
       const ratio = clientHeight / scrollHeight
       const thumbH = Math.max(24, trackH * ratio)
       const maxScroll = scrollHeight - clientHeight
