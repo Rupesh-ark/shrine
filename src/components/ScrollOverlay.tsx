@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { GRAIN_URL } from '../constants/grain'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
@@ -40,8 +40,11 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   const isFullyRevealed = revealProgress >= 1
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const thumbRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
   const [activeSection, setActiveSection] = useState(0)
+  const touchStartRef = useRef({ y: 0, scrollY: 0, timestamp: 0 })
+  const velocityRef = useRef(0)
 
   useEffect(() => {
     const container = scrollRef.current
@@ -65,11 +68,72 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   useEffect(() => {
     document.body.style.overflow = isFullyRevealed ? 'hidden' : ''
     document.documentElement.style.overflow = isFullyRevealed ? 'hidden' : ''
+    document.body.style.touchAction = isFullyRevealed ? 'none' : ''
     return () => {
       document.body.style.overflow = ''
       document.documentElement.style.overflow = ''
+      document.body.style.touchAction = ''
     }
   }, [isFullyRevealed])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const updateThumb = () => {
+      const thumb = thumbRef.current
+      if (!thumb) return
+      const { scrollTop, scrollHeight, clientHeight } = el
+      const trackH = thumb.parentElement!.clientHeight
+      const ratio = clientHeight / scrollHeight
+      const thumbH = Math.max(24, trackH * ratio)
+      const maxScroll = scrollHeight - clientHeight
+      const maxThumbTop = trackH - thumbH
+      const top = maxScroll > 0 ? (scrollTop / maxScroll) * maxThumbTop : 0
+      thumb.style.height = `${String(thumbH)}px`
+      thumb.style.top = `${String(top)}px`
+      thumb.style.opacity = scrollHeight > clientHeight ? '1' : '0'
+    }
+    el.addEventListener('scroll', updateThumb, { passive: true })
+    const ro = new ResizeObserver(updateThumb)
+    ro.observe(el)
+    updateThumb()
+    return () => {
+      el.removeEventListener('scroll', updateThumb)
+      ro.disconnect()
+    }
+  }, [])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStartRef.current = {
+      y: touch.clientY,
+      scrollY: scrollRef.current?.scrollTop ?? 0,
+      timestamp: Date.now(),
+    }
+    velocityRef.current = 0
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const el = scrollRef.current
+    if (!el) return
+    const touch = e.touches[0]
+    const start = touchStartRef.current
+    const deltaY = start.y - touch.clientY
+    const newScrollTop = start.scrollY + deltaY
+    el.scrollTop = newScrollTop
+    const dt = Date.now() - start.timestamp || 1
+    velocityRef.current = deltaY / dt * 16
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const v = velocityRef.current
+    if (Math.abs(v) > 0.5) {
+      const target = el.scrollTop + v * 8
+      el.scrollTo({ top: target, behavior: 'smooth' })
+    }
+  }, [])
 
   if (progress < 0.85) return null
 
@@ -128,22 +192,21 @@ export function ScrollOverlay({ progress }: { progress: number }) {
 
         {/* Paper body */}
         <div
-          ref={scrollRef}
-          className="scroll-paper"
           style={{
             flex: 1,
             minHeight: 0,
             background: 'linear-gradient(160deg, #F7F0DC 0%, #EDE4CC 40%, #E6DAC0 100%)',
-            position: 'relative', overflowY: 'auto', overflowX: 'hidden',
+            position: 'relative',
+            overflowY: 'scroll',
+            overflowX: 'hidden',
             margin: '2px 0',
             boxShadow: 'inset 0 0 60px rgba(120,100,70,0.18)',
-          scrollSnapType: isMobile ? 'none' : 'y mandatory', overscrollBehaviorY: 'contain',
+            overscrollBehaviorY: 'contain',
             touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(139,26,26,0.25) transparent',
-            userSelect: 'text',
-            willChange: 'scroll-position',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            isolation: 'isolate',
           }}
         >
           {/* Paper grain overlay */}
@@ -157,16 +220,50 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '8px', background: 'linear-gradient(to right, rgba(0,0,0,0.08), transparent)', pointerEvents: 'none', zIndex: 2 }} />
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '8px', background: 'linear-gradient(to left, rgba(0,0,0,0.08), transparent)', pointerEvents: 'none', zIndex: 2 }} />
 
-          {/* Sections */}
-          <div style={{ position: 'relative', zIndex: 3 }}>
+          {/* Touch scroll area - captures all touch events */}
+          <div
+            ref={scrollRef}
+            onTouchStart={isMobile ? handleTouchStart : undefined}
+            onTouchMove={isMobile ? handleTouchMove : undefined}
+            onTouchEnd={isMobile ? handleTouchEnd : undefined}
+            style={{
+              position: 'relative',
+              zIndex: 3,
+              padding: '0 40px',
+            }}
+          >
             {SECTION_COMPONENTS.map((Section, i) => (
               <div key={i} ref={el => { sectionRefs.current[i] = el }} style={isMobile ? undefined : { scrollSnapAlign: 'start' }}>
                 <Section />
               </div>
             ))}
           </div>
+        </div>
 
-
+        {/* Custom scroll track + thumb */}
+        <div style={{
+          position: 'absolute',
+          right: '8px',
+          top: '40px',
+          bottom: '40px',
+          width: '6px',
+          borderRadius: '3px',
+          background: 'rgba(139,26,26,0.08)',
+          pointerEvents: 'none',
+          zIndex: 20,
+          overflow: 'hidden',
+        }}>
+          <div
+            ref={thumbRef}
+            style={{
+              position: 'absolute',
+              left: 0,
+              width: '6px',
+              borderRadius: '3px',
+              background: 'rgba(139,26,26,0.35)',
+              transition: 'opacity 0.2s',
+            }}
+          />
         </div>
 
         {revealProgress > 0.9 && (
@@ -175,22 +272,6 @@ export function ScrollOverlay({ progress }: { progress: number }) {
 
         <WoodBar position="bottom" />
       </div>
-      <style>{`
-        .scroll-paper::-webkit-scrollbar {
-          width: 5px;
-        }
-        .scroll-paper::-webkit-scrollbar-track {
-          background: transparent;
-          border-left: 1px solid rgba(139,26,26,0.06);
-        }
-        .scroll-paper::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, rgba(139,26,26,0.18), rgba(139,26,26,0.30));
-          border-radius: 3px;
-        }
-        .scroll-paper::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, rgba(139,26,26,0.28), rgba(139,26,26,0.42));
-        }
-      `}</style>
     </div>
   )
 }
