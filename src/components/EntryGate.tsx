@@ -7,11 +7,11 @@ interface EntryGateProps {
 
 type Phase = 'appear' | 'waiting' | 'idle' | 'spreading' | 'filled' | 'fading' | 'done'
 
-const SCENE_BG = '#111625'
-const GATE_BG = '#161D2E'
-const LANTERN_RED = '#C42020'
-const LANTERN_CORE = '#FF6B5B'
-const AMBER = '#C4A77D'
+const SCENE_BG = '#1A0F08'
+const GATE_BG = '#F7F0DC'
+const LANTERN_RED = '#8B1A1A'
+const LANTERN_CORE = '#C42020'
+const AMBER = '#1A0F08'
 
 function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
   const [phase, setPhase] = useState<Phase>('appear')
@@ -76,13 +76,13 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         background: GATE_BG,
       }}
     >
-      {/* Subtle vignette to match scene depth */}
+      {/* Paper grain vignette */}
       <div style={{
         position: 'absolute',
         inset: 0,
         background: `
-          radial-gradient(ellipse at 50% 30%, rgba(30,40,60,0.4) 0%, transparent 60%),
-          radial-gradient(ellipse at 50% 100%, rgba(8,12,22,0.8) 0%, transparent 50%)
+          radial-gradient(ellipse at 50% 30%, rgba(196,167,125,0.15) 0%, transparent 60%),
+          radial-gradient(ellipse at 50% 100%, rgba(92,74,42,0.12) 0%, transparent 50%)
         `,
         pointerEvents: 'none',
       }} />
@@ -302,12 +302,11 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
           <p style={{
             fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
             fontSize: 'clamp(18px, 2.2vw, 26px)',
-            color: AMBER,
+            color: '#1A0F08',
             letterSpacing: '8px',
             margin: 0,
             fontWeight: 700,
-            opacity: 0.9,
-            textShadow: `0 0 20px ${AMBER}33`,
+            opacity: 0.95,
           }}>
             {isWaiting ? '準備中' : '始める'}
           </p>
@@ -315,7 +314,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
             fontFamily: "'Playfair Display', Georgia, serif",
             fontSize: 'clamp(11px, 1.1vw, 13px)',
             fontStyle: 'italic',
-            color: `${AMBER}88`,
+            color: '#5C4A2A',
             letterSpacing: '3px',
             margin: 0,
           }}>
