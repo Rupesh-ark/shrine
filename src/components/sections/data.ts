@@ -1,5 +1,5 @@
 export const ROLES = [
-  { title: 'Engineer & Catalyst', org: 'Bizom · CEO\'s Office', period: 'Apr 2023 — Jul 2024', points: ['Integrated BNPL which lead to 5% increase in user satisfaction', 'Hosted weekly company-wide reviews & Town Halls', 'Co-owned Suggested Order; presented across India & Indonesia'] },
+  { title: 'Engineer & Catalyst', org: 'Bizom · CEO\'s Office', period: 'Apr 2023 — Jul 2024', points: ['Integrated BNPL in Bizom SFA', 'Hosted weekly company-wide reviews & Town Halls', 'Co-owned Suggested Order; presented across India & Indonesia'] },
   { title: 'Data Scientist', org: 'Bizom · CEO\'s Office', period: 'Jun 2022 — Dec 2022', points: ['Built churn analysis for retention prediction', 'Prototyped gamified performance dashboards for Phillips, Godrej, Piral', 'Co-created search as a service for Open network of digital commerce.'] },
   { title: 'Software Engineer', org: 'Bizom · Platform', period: 'May 2022 — Jun 2022', points: ['Owned dev flow end-to-end from requirements to delivery', 'Rewrote legacy code, reducing runtime significantly'] },
   { title: 'SDE Intern', org: 'Bizom · Analytics', period: 'Aug 2021 — May 2022', points: ['Built reports, dashboards & alert systems', 'Optimised legacy platform conversion tooling'] },
