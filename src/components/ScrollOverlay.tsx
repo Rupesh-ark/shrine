@@ -112,7 +112,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
             position: 'relative', overflowY: 'auto', overflowX: 'hidden',
             margin: '2px 0',
             boxShadow: 'inset 0 0 60px rgba(120,100,70,0.18)',
-            scrollSnapType: isMobile ? 'y proximity' : 'y mandatory', overscrollBehavior: 'contain',
+            scrollSnapType: isMobile ? 'none' : 'y mandatory', overscrollBehavior: 'contain',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(139,26,26,0.25) transparent',
@@ -132,7 +132,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           {/* Sections */}
           <div style={{ position: 'relative', zIndex: 3 }}>
             {SECTION_COMPONENTS.map((Section, i) => (
-              <div key={i} ref={el => { sectionRefs.current[i] = el }} style={{ scrollSnapAlign: 'start' }}>
+              <div key={i} ref={el => { sectionRefs.current[i] = el }} style={isMobile ? undefined : { scrollSnapAlign: 'start' }}>
                 <Section />
               </div>
             ))}

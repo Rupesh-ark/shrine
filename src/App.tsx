@@ -103,6 +103,23 @@ export function App() {
           transition: 'opacity 0.1s linear',
         }}
       />
+      {/* Mobile corner vignette — softens house edges during ortho phase */}
+      {typeof window !== 'undefined' && window.innerWidth < 768 && (
+        <div
+          aria-hidden
+          style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 3,
+            opacity: Math.max(0, 1 - progress / 0.22),
+            background: `
+              radial-gradient(ellipse at 50% 50%, transparent 55%, #111625 100%),
+              radial-gradient(ellipse at 50% 70%, transparent 50%, #111625 90%)
+            `,
+          }}
+        />
+      )}
       <HeroOverlay progress={progress} />
       <ProgressOverlay progress={progress} />
       <ScrollOverlay progress={progress} />
