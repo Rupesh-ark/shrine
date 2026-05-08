@@ -8,7 +8,7 @@ import { Seal } from '../scroll/Seal'
 export const HeroSection = memo(function HeroSection() {
   return (
     <section style={{
-      height: '100%', minHeight: '100%',
+      minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', alignItems: 'center',
       scrollSnapAlign: 'start', padding: '48px 40px',

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { GRAIN_URL } from '../constants/grain'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
@@ -60,6 +60,8 @@ export function ScrollOverlay({ progress }: { progress: number }) {
     return () => { observer.disconnect() }
   }, [revealProgress])
 
+  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, [])
+
   if (progress < 0.85) return null
 
   const eased = 1 - Math.pow(1 - revealProgress, 3)
@@ -110,7 +112,8 @@ export function ScrollOverlay({ progress }: { progress: number }) {
             position: 'relative', overflowY: 'auto', overflowX: 'hidden',
             margin: '2px 0',
             boxShadow: 'inset 0 0 60px rgba(120,100,70,0.18)',
-            scrollSnapType: 'y mandatory', overscrollBehavior: 'contain',
+            scrollSnapType: isMobile ? 'y proximity' : 'y mandatory', overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(139,26,26,0.25) transparent',
           }}

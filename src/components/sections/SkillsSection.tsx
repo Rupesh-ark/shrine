@@ -10,7 +10,7 @@ const LEVEL_OPACITY = [0.65, 0.82, 1]
 export const SkillsSection = memo(function SkillsSection() {
   return (
     <section style={{
-      height: '100%', minHeight: '100%',
+      minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
       padding: '24px 40px',

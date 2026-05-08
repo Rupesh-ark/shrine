@@ -7,7 +7,7 @@ import { EDUCATION } from './data'
 export const EducationSection = memo(function EducationSection() {
   return (
     <section style={{
-      height: '100%', minHeight: '100%',
+      minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
       padding: '24px 40px',

@@ -7,7 +7,7 @@ import { Seal } from '../scroll/Seal'
 export const ContactSection = memo(function ContactSection() {
   return (
     <section style={{
-      height: '100%', minHeight: '100%',
+      minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', alignItems: 'center',
       scrollSnapAlign: 'start', padding: '32px 40px', textAlign: 'center',

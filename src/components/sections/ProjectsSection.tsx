@@ -7,7 +7,7 @@ import { PROJECTS } from './data'
 export const ProjectsSection = memo(function ProjectsSection() {
   return (
     <section style={{
-      height: '100%', minHeight: '100%',
+      minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
       padding: '24px 40px',

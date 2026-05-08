@@ -6,7 +6,7 @@ import { SectionHeader } from '../scroll/SectionHeader'
 export const AboutSection = memo(function AboutSection() {
   return (
     <section style={{
-      height: '100%', minHeight: '100%',
+      minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
       padding: '32px 40px',
