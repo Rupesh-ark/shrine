@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { GRAIN_URL } from '../constants/grain'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
@@ -36,6 +36,8 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   const revealStart = 0.88
   const revealEnd = 1
   const revealProgress = Math.min(1, Math.max(0, (progress - revealStart) / (revealEnd - revealStart)))
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isFullyRevealed = revealProgress >= 1
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -60,8 +62,14 @@ export function ScrollOverlay({ progress }: { progress: number }) {
     return () => { observer.disconnect() }
   }, [revealProgress])
 
-  const isMobile = useMemo(() => typeof window !== 'undefined' && window.innerWidth < 768, [])
-  const isFullyRevealed = revealProgress >= 1
+  useEffect(() => {
+    document.body.style.overflow = isFullyRevealed ? 'hidden' : ''
+    document.documentElement.style.overflow = isFullyRevealed ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+  }, [isFullyRevealed])
 
   if (progress < 0.85) return null
 
@@ -77,12 +85,20 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10,
-      clipPath: `circle(${String(clipRadius)}% at var(--resume-origin-x, 50%) var(--resume-origin-y, 50%))`,
-      WebkitClipPath: `circle(${String(clipRadius)}% at var(--resume-origin-x, 50%) var(--resume-origin-y, 50%))`,
+      ...(isFullyRevealed
+        ? {
+            background: '#1E160E',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }
+        : {
+            clipPath: `circle(${String(clipRadius)}% at var(--resume-origin-x, 50%) var(--resume-origin-y, 50%))`,
+            WebkitClipPath: `circle(${String(clipRadius)}% at var(--resume-origin-x, 50%) var(--resume-origin-y, 50%))`,
+            background: '#1E160E',
+            overflow: 'hidden',
+          }),
       pointerEvents: revealProgress > 0.95 ? 'auto' : 'none',
-      background: '#1E160E',
-      overflow: 'hidden',
-      ...(isFullyRevealed ? { display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}),
     }}>
       {/* Background layers */}
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(64,44,28,0.7) 0%, rgba(30,22,14,0.95) 70%, #100B06 100%)', pointerEvents: 'none' }} />
