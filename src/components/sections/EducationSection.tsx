@@ -10,7 +10,7 @@ export const EducationSection = memo(function EducationSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
-      padding: '24px 40px',
+      padding: '24px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="学歴" english="Education" />
       <div style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}>

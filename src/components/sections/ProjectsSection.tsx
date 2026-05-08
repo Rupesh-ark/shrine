@@ -10,7 +10,7 @@ export const ProjectsSection = memo(function ProjectsSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
-      padding: '24px 40px',
+      padding: '24px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="作品" english="Projects" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', maxWidth: '560px', margin: '0 auto' }}>

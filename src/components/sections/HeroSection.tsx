@@ -11,7 +11,7 @@ export const HeroSection = memo(function HeroSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', alignItems: 'center',
-      scrollSnapAlign: 'start', padding: '48px 40px',
+      scrollSnapAlign: 'start', padding: '48px clamp(16px, 5vw, 40px)',
       position: 'relative', overflow: 'hidden',
     }}>
       <div style={{

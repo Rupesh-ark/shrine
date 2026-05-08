@@ -11,12 +11,12 @@ export const CareerSection = memo(function CareerSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
-      padding: '24px 40px',
+      padding: '24px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="経歴" english="Career" />
 
-      <div style={{ maxWidth: '540px', margin: '0 auto', position: 'relative', paddingLeft: '28px' }}>
-        <div style={{ position: 'absolute', left: '5px', top: 8, bottom: 8, width: '1px', background: 'linear-gradient(to bottom, #8B1A1A, rgba(139,26,26,0.15))' }} />
+      <div style={{ maxWidth: '540px', margin: '0 auto', position: 'relative', paddingLeft: 'clamp(20px, 5vw, 28px)' }}>
+        <div style={{ position: 'absolute', left: 'clamp(4px, 1.5vw, 5px)', top: 8, bottom: 8, width: '1px', background: 'linear-gradient(to bottom, #8B1A1A, rgba(139,26,26,0.15))' }} />
 
         {ROLES.map((role, i) => (
           <div key={i} style={{ position: 'relative', marginBottom: '20px' }}>

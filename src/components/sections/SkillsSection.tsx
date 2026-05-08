@@ -13,7 +13,7 @@ export const SkillsSection = memo(function SkillsSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
-      padding: '24px 40px',
+      padding: '24px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="技術" english="Skills" />
 

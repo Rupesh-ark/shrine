@@ -9,7 +9,7 @@ export const AboutSection = memo(function AboutSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
-      padding: '32px 40px',
+      padding: '32px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="略歴" english="About" />
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', maxWidth: '520px', margin: '0 auto' }}>

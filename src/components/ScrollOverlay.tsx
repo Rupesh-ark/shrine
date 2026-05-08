@@ -211,7 +211,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           <div style={{
             position: 'relative',
             zIndex: 3,
-            padding: '0 40px',
+            padding: '0 clamp(16px, 5vw, 40px)',
           }}>
             {SECTION_COMPONENTS.map((Section, i) => (
               <div key={i} ref={el => { sectionRefs.current[i] = el }} style={{ scrollSnapAlign: 'start' }}>

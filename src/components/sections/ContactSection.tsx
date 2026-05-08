@@ -10,7 +10,7 @@ export const ContactSection = memo(function ContactSection() {
       minHeight: '100%',
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', alignItems: 'center',
-      scrollSnapAlign: 'start', padding: '32px 40px', textAlign: 'center',
+      scrollSnapAlign: 'start', padding: '32px clamp(16px, 5vw, 40px)', textAlign: 'center',
     }}>
       <SectionHeader kanji="連絡" english="Contact" />
 
