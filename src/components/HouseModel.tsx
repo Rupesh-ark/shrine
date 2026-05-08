@@ -161,41 +161,44 @@ function animateScreenParticles(
   const w = canvas.width
   const h = canvas.height
 
-  // Animated deep indigo background
-   
-  ctx.fillStyle = '#060d18'
+  // Warm lantern-lit background
+  ctx.fillStyle = '#1a0e06'
   ctx.fillRect(0, 0, w, h)
 
-  // Breathing radial glow
-  const breath = Math.sin(t * 0.4) * 0.1 + 0.35
+  // Breathing radial glow — warm lantern core
+  const breath = Math.sin(t * 0.4) * 0.08 + 0.32
   const grad = ctx.createRadialGradient(w / 2, h * 0.35, 0, w / 2, h * 0.35, w * 1.1)
-   
-  grad.addColorStop(0, `rgba(60, 120, 190, ${String(breath)})`)
-   
-  grad.addColorStop(0.5, `rgba(30, 70, 120, ${String(breath * 0.4)})`)
+  grad.addColorStop(0, `rgba(220, 160, 60, ${String(breath)})`)
+  grad.addColorStop(0.5, `rgba(180, 100, 30, ${String(breath * 0.35)})`)
   grad.addColorStop(1, 'rgba(0, 0, 0, 0)')
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, w, h)
 
+  // Floating warm light pools
   ctx.globalCompositeOperation = 'screen'
   for (let i = 0; i < 3; i++) {
     const nx = ((Math.sin(t * 0.08 + i * 2.1) * 0.5 + 0.5) * w * 1.4) - w * 0.2
     const ny = ((Math.cos(t * 0.06 + i * 1.7) * 0.5 + 0.5) * h * 1.2) - h * 0.1
-    const nr = 60 + Math.sin(t * 0.12 + i) * 20
+    const nr = 50 + Math.sin(t * 0.12 + i) * 18
     const ngrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, nr)
-     
-    ngrad.addColorStop(0, 'rgba(40, 100, 180, 0.15)')
+    ngrad.addColorStop(0, 'rgba(200, 140, 40, 0.12)')
     ngrad.addColorStop(1, 'rgba(0, 0, 0, 0)')
     ctx.fillStyle = ngrad
     ctx.fillRect(0, 0, w, h)
   }
   ctx.globalCompositeOperation = 'source-over'
 
-  // Vertical scanlines
-  ctx.globalAlpha = 0.08
-  ctx.fillStyle = '#88ccff'
-  for (let x = 0; x < w; x += 3) {
-    ctx.fillRect(x, 0, 1, h)
+  // Rice-paper grain lines
+  ctx.globalAlpha = 0.04
+  ctx.strokeStyle = '#D4AC6E'
+  ctx.lineWidth = 1
+  for (let y = 0; y < h; y += 6) {
+    ctx.beginPath()
+    ctx.moveTo(0, y + Math.sin(y * 0.3) * 2)
+    for (let x = 0; x < w; x += 4) {
+      ctx.lineTo(x, y + Math.sin((x + y) * 0.08) * 2)
+    }
+    ctx.stroke()
   }
   ctx.globalAlpha = 1
 
@@ -222,28 +225,26 @@ function animateScreenParticles(
     const g = (rgb >> 8) & 255
     const b = rgb & 255
 
-    // Large soft glow halo
+    // Soft warm glow halo
     const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4)
-     
-    glow.addColorStop(0, `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha * 0.7)})`)
-     
-    glow.addColorStop(0.5, `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha * 0.2)})`)
+    glow.addColorStop(0, `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha * 0.6)})`)
+    glow.addColorStop(0.5, `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha * 0.15)})`)
     glow.addColorStop(1, 'rgba(0, 0, 0, 0)')
     ctx.fillStyle = glow
     ctx.beginPath()
     ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2)
     ctx.fill()
 
-     
+    // Ember core
     ctx.fillStyle = `rgba(${String(r)}, ${String(g)}, ${String(b)}, ${String(alpha)})`
     ctx.beginPath()
-    ctx.arc(p.x, p.y, p.r * 0.8, 0, Math.PI * 2)
+    ctx.arc(p.x, p.y, p.r * 0.7, 0, Math.PI * 2)
     ctx.fill()
 
-     
-    ctx.fillStyle = `rgba(255, 255, 255, ${String(alpha * 0.9)})`
+    // Bright center
+    ctx.fillStyle = `rgba(255, 220, 210, ${String(alpha * 0.85)})`
     ctx.beginPath()
-    ctx.arc(p.x, p.y, p.r * 0.3, 0, Math.PI * 2)
+    ctx.arc(p.x, p.y, p.r * 0.25, 0, Math.PI * 2)
     ctx.fill()
   }
 
@@ -255,10 +256,8 @@ function animateScreenParticles(
     const size = 3 + pulse * 6
 
     const sgrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 2)
-     
-    sgrad.addColorStop(0, `rgba(200, 240, 255, ${String(pulse * 0.9)})`)
-     
-    sgrad.addColorStop(0.4, `rgba(150, 210, 255, ${String(pulse * 0.3)})`)
+    sgrad.addColorStop(0, `rgba(255, 90, 50, ${String(pulse * 0.8)})`)
+    sgrad.addColorStop(0.4, `rgba(200, 40, 20, ${String(pulse * 0.25)})`)
     sgrad.addColorStop(1, 'rgba(0, 0, 0, 0)')
     ctx.fillStyle = sgrad
     ctx.beginPath()
@@ -401,7 +400,7 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
           vy: -0.4 - Math.random() * 1.4,
           life: Math.floor(Math.random() * 100),
           maxLife: 60 + Math.floor(Math.random() * 80),
-          color: Math.random() > 0.3 ? '#b4f0ff' : '#ffffff',
+          color: Math.random() > 0.35 ? '#e04030' : '#ffc8a0',
         })
       }
       screenParticlesRef.current = particles
