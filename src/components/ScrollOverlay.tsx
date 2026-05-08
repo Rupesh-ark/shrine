@@ -99,6 +99,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
         transform: `translate(-50%, -50%) scale(${String(innerScale)})`,
         transformOrigin: 'center',
         opacity: revealProgress,
+        minHeight: 0,
       }}>
         <WoodBar position="top" />
 
@@ -108,11 +109,13 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           className="scroll-paper"
           style={{
             flex: 1,
+            minHeight: 0,
             background: 'linear-gradient(160deg, #F7F0DC 0%, #EDE4CC 40%, #E6DAC0 100%)',
             position: 'relative', overflowY: 'auto', overflowX: 'hidden',
             margin: '2px 0',
             boxShadow: 'inset 0 0 60px rgba(120,100,70,0.18)',
-            scrollSnapType: isMobile ? 'none' : 'y mandatory', overscrollBehavior: 'contain',
+          scrollSnapType: isMobile ? 'none' : 'y mandatory', overscrollBehaviorY: 'contain',
+            touchAction: 'pan-y',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(139,26,26,0.25) transparent',
