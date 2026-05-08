@@ -24,7 +24,7 @@ function valueNoise(x: number, y: number): number {
     + (n01 * (1 - sx) + n11 * sx) * sy
 }
 
-function fbm(x: number, y: number, octaves: number = 4): number {
+function fbm(x: number, y: number, octaves = 4): number {
   let val = 0
   let amp = 1
   let freq = 1

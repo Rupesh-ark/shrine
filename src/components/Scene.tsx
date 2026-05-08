@@ -40,10 +40,10 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       <TerrainGround overlayBaseY={overlayBaseY} />
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={() => setModelReady(true)} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={() => { setModelReady(true); }} />
       </Suspense>
 
-      <ShaderPrecompiler enabled={modelReady} onDone={() => setShadersReady(true)} />
+      <ShaderPrecompiler enabled={modelReady} onDone={() => { setShadersReady(true); }} />
 
       <ContactShadows
         position={[0, overlayBaseY, 0]}

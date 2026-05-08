@@ -40,9 +40,9 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
     if (phase !== 'idle') return
     onEnter()
     setPhase('spreading')
-    timeoutsRef.current.push(setTimeout(() => setPhase('filled'), 1200))
-    timeoutsRef.current.push(setTimeout(() => setPhase('fading'), 1800))
-    timeoutsRef.current.push(setTimeout(() => setPhase('done'), 2800))
+    timeoutsRef.current.push(setTimeout(() => { setPhase('filled'); }, 1200))
+    timeoutsRef.current.push(setTimeout(() => { setPhase('fading'); }, 1800))
+    timeoutsRef.current.push(setTimeout(() => { setPhase('done'); }, 2800))
   }
 
   if (phase === 'done') return null

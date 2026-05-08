@@ -61,7 +61,7 @@ export const ContactSection = memo(function ContactSection() {
       }}>Edinburgh, UK · Thank you for visiting</p>
 
       <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         style={{
           all: 'unset',
           marginTop: '28px',

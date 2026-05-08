@@ -72,7 +72,7 @@ export function App() {
     <div style={{ position: 'fixed', inset: 0, isolation: 'isolate' }}>
       <EntryGate onEnter={handleEnter} ready={houseReady} />
       <Suspense fallback={null}>
-        <CanvasScene progress={progress} onHouseReady={() => setHouseReady(true)} entered={entered} />
+        <CanvasScene progress={progress} onHouseReady={() => { setHouseReady(true); }} entered={entered} />
       </Suspense>
       <div
         aria-hidden

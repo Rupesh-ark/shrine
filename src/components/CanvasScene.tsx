@@ -9,7 +9,7 @@ import type { SceneProps } from '../types'
 function getCamera() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
   return {
-    position: isMobile ? ([0, 2.5, 3.2] as const) : ([0, 2.65, 2.6] as const),
+    position: isMobile ? ([0, 7.5, 1.5] as const) : ([0, 7.0, 1.5] as const),
     fov: isMobile ? 62 : 50,
   }
 }
@@ -35,8 +35,8 @@ export default function CanvasScene({ progress, onHouseReady, entered }: ScenePr
       <PerformanceMonitor
         factor={1}
         flipflops={3}
-        onChange={({ factor }) => setDpr(Math.max(0.75, Math.floor(0.75 + 1.25 * factor * 10) / 10))}
-        onFallback={() => setDpr(1)}
+        onChange={({ factor }) => { setDpr(Math.max(0.75, Math.floor(0.75 + 1.25 * factor * 10) / 10)); }}
+        onFallback={() => { setDpr(1); }}
       />
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />

@@ -9,6 +9,9 @@ const SCROLL_Z = -1.8
 const BASE_Y = 1.1
 const INTRO_Y = 2.75
 const MOBILE_INTRO_Y = 2.9
+const TOP_DOWN_Y = 7.0
+const MOBILE_TOP_DOWN_Y = 7.5
+const TOP_DOWN_Z = 1.5
 const DEFAULT_GROUND_TOP_Y = -1.35
 const CAMERA_TRANSITION_END = 0.18
 const INTRO_LOOK_AT_Y_BIAS = 0.30
@@ -110,10 +113,31 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     const scrollLookAtTarget = focus
       ? focus.clone().add(new THREE.Vector3(0, -0.15, 0.02))
       : scrollLookAt
-    const introLookAtTarget = houseFrame
+
+    // Swoop: top-down → front view → into the house
+    const swoopT = THREE.MathUtils.smoothstep(progress, 0.0, 0.10)
+    const topDownY = isMobile ? MOBILE_TOP_DOWN_Y : TOP_DOWN_Y
+    const frontY = isMobile ? MOBILE_INTRO_Y : INTRO_Y
+    const frontZ = isMobile ? MOBILE_OUTSIDE_Z : OUTSIDE_Z
+
+    const blendedTargetY = THREE.MathUtils.lerp(
+      THREE.MathUtils.lerp(topDownY, frontY, swoopT),
+      targetY,
+      cameraBlendT,
+    )
+    const blendedTargetZ = THREE.MathUtils.lerp(
+      THREE.MathUtils.lerp(TOP_DOWN_Z, frontZ, swoopT),
+      targetZ,
+      cameraBlendT,
+    )
+
+    const topDownLookAt = houseFrame
+      ? houseFrame.center.clone().add(new THREE.Vector3(0, 0, 0.3))
+      : scrollLookAtTarget
+    const frontLookAt = houseFrame
       ? houseFrame.center.clone().add(new THREE.Vector3(0, houseFrame.size.y * (isMobile ? 0.05 : INTRO_LOOK_AT_Y_BIAS), 0))
       : scrollLookAtTarget
-    const lookAtTarget = introLookAtTarget.clone().lerp(scrollLookAtTarget, cameraBlendT)
+    const lookAtTarget = topDownLookAt.clone().lerp(frontLookAt, swoopT).lerp(scrollLookAtTarget, cameraBlendT)
 
     const settleT = THREE.MathUtils.smoothstep(progress, 0.78, 0.95)
     const introMotionT = THREE.MathUtils.smoothstep(progress, 0.03, 0.2)
@@ -128,7 +152,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
 
     state.camera.position.z = THREE.MathUtils.lerp(
       state.camera.position.z,
-      targetZ,
+      blendedTargetZ,
       delta * 3,
     )
     if (focus) {
@@ -136,7 +160,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     }
     state.camera.position.y = THREE.MathUtils.lerp(
       state.camera.position.y,
-      targetY + breatheY,
+      blendedTargetY + breatheY,
       delta * 3,
     )
 

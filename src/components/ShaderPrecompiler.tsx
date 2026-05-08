@@ -15,7 +15,7 @@ export function ShaderPrecompiler({ enabled, onDone }: { enabled: boolean; onDon
       onDone?.()
     })
 
-    return () => cancelAnimationFrame(id)
+    return () => { cancelAnimationFrame(id); }
   }, [enabled, gl, scene, camera, onDone])
 
   return null
