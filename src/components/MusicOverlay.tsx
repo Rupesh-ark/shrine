@@ -9,7 +9,7 @@ function MusicOverlayComponent({ muted, onToggleMute }: MusicOverlayProps) {
   return (
     <button
       onClick={onToggleMute}
-      aria-label={muted ? 'Unmute music' : 'Mute music'}
+      aria-label={`音楽 · ${muted ? 'Off' : 'On'}`}
       style={{
         all: 'unset',
         position: 'fixed',

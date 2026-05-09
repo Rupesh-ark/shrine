@@ -39,14 +39,11 @@ export function FallingParticles() {
     const t = state.clock.elapsedTime
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      // Fall down
       posArray[i * 3 + 1] -= speeds[i] * 0.012
 
-      // Drift sideways
       posArray[i * 3] += Math.sin(t * 0.5 + phases[i]) * 0.002
       posArray[i * 3 + 2] += Math.cos(t * 0.3 + phases[i]) * 0.002
 
-      // Reset if below ground
       if (posArray[i * 3 + 1] < -1.8) {
         const rng = seededRandom(Math.floor((t + i) * 1000))
         posArray[i * 3 + 1] = 6.5 + rng() * 2

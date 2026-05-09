@@ -42,6 +42,8 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
   const blendedProjectionRef = useRef(new THREE.Matrix4())
   const timeRef = useRef(0)
   const lastCssUpdateRef = useRef(0)
+  const scratchVecA = useRef(new THREE.Vector3())
+  const scratchVecB = useRef(new THREE.Vector3())
 
   const handleBounds = useCallback((bounds: THREE.Box3) => {
     setHouseBounds(bounds.clone())
@@ -66,10 +68,15 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     return { center, size }
   }, [houseBounds])
 
-  const scrollLookAt = useMemo(
+    const scrollLookAt = useMemo(
     () => new THREE.Vector3(0, BASE_Y, 0),
     [],
   )
+
+  const scrollLookAtTarget = useRef(new THREE.Vector3())
+  const topDownLookAtTarget = useRef(new THREE.Vector3())
+  const frontLookAtTarget = useRef(new THREE.Vector3())
+  const lookAtResult = useRef(new THREE.Vector3())
 
   useEffect(() => {
     const root = document.documentElement
@@ -110,8 +117,8 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     const yAtDoor = THREE.MathUtils.lerp(introY + mobileIntroYOffset, doorSafeY, approachDoorT)
     const settleYT = THREE.MathUtils.smoothstep(progress, 0.50, 0.82)
     const targetY = THREE.MathUtils.lerp(yAtDoor, focusY, settleYT)
-    const scrollLookAtTarget = focus
-      ? focus.clone().add(new THREE.Vector3(0, -0.15, 0.02))
+    const scrollLookAtTargetVec = focus
+      ? scrollLookAtTarget.current.copy(focus).add(scratchVecA.current.set(0, -0.15, 0.02))
       : scrollLookAt
 
     // Swoop: top-down → front view → into the house
@@ -132,12 +139,12 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     )
 
     const topDownLookAt = houseFrame
-      ? houseFrame.center.clone().add(new THREE.Vector3(0, 0, 0.3))
-      : scrollLookAtTarget
+      ? topDownLookAtTarget.current.copy(houseFrame.center).add(scratchVecB.current.set(0, 0, 0.3))
+      : scrollLookAtTargetVec
     const frontLookAt = houseFrame
-      ? houseFrame.center.clone().add(new THREE.Vector3(0, houseFrame.size.y * (isMobile ? 0.05 : INTRO_LOOK_AT_Y_BIAS), 0))
-      : scrollLookAtTarget
-    const lookAtTarget = topDownLookAt.clone().lerp(frontLookAt, swoopT).lerp(scrollLookAtTarget, cameraBlendT)
+      ? frontLookAtTarget.current.copy(houseFrame.center).add(scratchVecA.current.set(0, houseFrame.size.y * (isMobile ? 0.05 : INTRO_LOOK_AT_Y_BIAS), 0))
+      : scrollLookAtTargetVec
+    const lookAtTarget = lookAtResult.current.copy(topDownLookAt).lerp(frontLookAt, swoopT).lerp(scrollLookAtTargetVec, cameraBlendT)
 
     const settleT = THREE.MathUtils.smoothstep(progress, 0.78, 0.95)
     const introMotionT = THREE.MathUtils.smoothstep(progress, 0.03, 0.2)

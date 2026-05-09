@@ -148,10 +148,7 @@ export function BambooForest() {
   const baseClumps = isMobile ? MOBILE_CLUMPS : DESKTOP_CLUMPS
   const cullDist = isMobile ? MOBILE_CULL_DIST : DESKTOP_CULL_DIST
 
-  const [visibleIndices, setVisibleIndices] = useState<Set<number>>(
-    () => new Set(baseClumps.map((_, i) => i)),
-  )
-
+  const clonesRef = useRef<(THREE.Group | null)[]>([])
   const lastCullRef = useRef(0)
 
   useFrame((state) => {
@@ -160,44 +157,28 @@ export function BambooForest() {
     lastCullRef.current = now
 
     camPos.current.copy(state.camera.position)
-    const next = new Set<number>()
 
     for (let i = 0; i < baseClumps.length; i++) {
+      const clone = clonesRef.current[i]
+      if (!clone) continue
       const c = baseClumps[i]
       clumpPos.current.set(c.position[0], c.position[1], c.position[2])
-      if (camPos.current.distanceTo(clumpPos.current) < cullDist) {
-        next.add(i)
-      }
+      clone.visible = camPos.current.distanceTo(clumpPos.current) < cullDist
     }
-
-    setVisibleIndices((prev) => {
-      if (prev.size === next.size) {
-        let same = true
-        for (const v of next) {
-          if (!prev.has(v)) {
-            same = false
-            break
-          }
-        }
-        if (same) return prev
-      }
-      return next
-    })
   })
 
   return (
     <>
-      {baseClumps.map((clump, i) =>
-        visibleIndices.has(i) ? (
-          <Clone
-            key={i}
-            object={scene}
-            position={clump.position}
-            rotation={clump.rotation}
-            scale={clump.scale}
-          />
-        ) : null,
-      )}
+      {baseClumps.map((clump, i) => (
+        <Clone
+          key={i}
+          ref={(el: THREE.Group | null) => { clonesRef.current[i] = el; }}
+          object={scene}
+          position={clump.position}
+          rotation={clump.rotation}
+          scale={clump.scale}
+        />
+      ))}
     </>
   )
 }
