@@ -19,7 +19,7 @@ export function GroundMist() {
     <group>
       <mesh ref={meshRef} position={[0, -1.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[36, 36, 1, 1]} />
-        <meshStandardMaterial
+        <meshBasicMaterial
           color="#B7C9D6"
           transparent
           opacity={0.15}
@@ -29,7 +29,7 @@ export function GroundMist() {
       </mesh>
       <mesh ref={secondaryRef} position={[0, -0.95, -1.5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[20, 20, 1, 1]} />
-        <meshStandardMaterial
+        <meshBasicMaterial
           color="#D4C8B3"
           transparent
           opacity={0.08}

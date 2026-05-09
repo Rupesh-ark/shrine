@@ -10,6 +10,7 @@ import { FallingParticles } from './Particles'
 import { GroundMist } from './Mist'
 import { SceneLighting } from './SceneLighting'
 import { TerrainGround } from './TerrainGround'
+import { getToonGradientMap } from '../utils/toon'
 
 const GROUND_HEIGHT = 6
 
@@ -33,7 +34,7 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       {/* Ground volume */}
       <mesh position={[0, groundCenterY, 0]}>
         <boxGeometry args={[200, GROUND_HEIGHT, 200]} />
-        <meshStandardMaterial color="#182229" roughness={1} />
+        <meshToonMaterial color="#182229" gradientMap={getToonGradientMap()} />
       </mesh>
 
       {/* Irregular terrain overlays */}

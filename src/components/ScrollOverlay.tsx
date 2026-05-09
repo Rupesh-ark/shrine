@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { GRAIN_URL } from '../constants/grain'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
@@ -36,7 +36,16 @@ export function ScrollOverlay({ progress }: { progress: number }) {
   const revealStart = 0.88
   const revealEnd = 1
   const revealProgress = Math.min(1, Math.max(0, (progress - revealStart) / (revealEnd - revealStart)))
-  const isFullyRevealed = revealProgress >= 1
+  const activationRef = useRef(false)
+  const [overlayActivated, setOverlayActivated] = useState(false)
+  const activateOverlay = useCallback(() => {
+    if (activationRef.current) return
+    activationRef.current = true
+    setOverlayActivated(true)
+  }, [])
+
+  const uiRevealProgress = overlayActivated ? 1 : revealProgress
+  const isFullyRevealed = uiRevealProgress >= 1
   const isVisible = progress >= 0.85
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -73,6 +82,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
     let startScrollTop = 0
 
     const onTouchStart = (e: TouchEvent) => {
+      activateOverlay()
       startY = e.touches[0].clientY
       startScrollTop = el.scrollTop
     }
@@ -88,12 +98,14 @@ export function ScrollOverlay({ progress }: { progress: number }) {
 
     el.addEventListener('touchstart', onTouchStart, { passive: true })
     el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('wheel', activateOverlay, { passive: true })
 
     return () => {
       el.removeEventListener('touchstart', onTouchStart)
       el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('wheel', activateOverlay)
     }
-  }, [isVisible])
+  }, [activateOverlay, isVisible])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -112,19 +124,23 @@ export function ScrollOverlay({ progress }: { progress: number }) {
       thumb.style.top = `${String(top)}px`
       thumb.style.opacity = scrollHeight > clientHeight ? '1' : '0'
     }
-    el.addEventListener('scroll', updateThumb, { passive: true })
+    const onScroll = () => {
+      activateOverlay()
+      updateThumb()
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
     const ro = new ResizeObserver(updateThumb)
     ro.observe(el)
     updateThumb()
     return () => {
-      el.removeEventListener('scroll', updateThumb)
+      el.removeEventListener('scroll', onScroll)
       ro.disconnect()
     }
-  }, [])
+  }, [activateOverlay])
 
   if (!isVisible) return null
 
-  const eased = 1 - Math.pow(1 - revealProgress, 3)
+  const eased = 1 - Math.pow(1 - uiRevealProgress, 3)
   const clipRadius = eased * 145
   const innerScale = 0.88 + eased * 0.12
 
@@ -247,7 +263,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           />
         </div>
 
-        {revealProgress > 0.9 && (
+        {uiRevealProgress > 0.9 && (
           <SideNav activeIndex={activeSection} onNavigate={navigateToSection} sections={SECTIONS} />
         )}
 

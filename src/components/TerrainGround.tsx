@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
+import { getToonGradientMap } from '../utils/toon'
 
 function hash2D(ix: number, iy: number): number {
   let h = (ix * 374761393 + iy * 668265263) | 0
@@ -114,9 +115,9 @@ export function TerrainGround({ overlayBaseY }: TerrainGroundProps) {
           position={[0, overlayBaseY + layer.offsetY, layer.offsetZ]}
           geometry={layer.geometry}
         >
-          <meshStandardMaterial
+          <meshToonMaterial
             color={layer.color}
-            roughness={1}
+            gradientMap={getToonGradientMap()}
             transparent={layer.opacity < 1}
             opacity={layer.opacity}
           />

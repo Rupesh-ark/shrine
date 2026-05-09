@@ -14,6 +14,7 @@ import type {
 import { RedSpirits } from './Atmosphere'
 import { TableWithCushions, TABLE_OFFSET_Z } from './Table'
 import { SCROLL_LIFT, SCROLL_OFFSET_X, SCROLL_OFFSET_Z, TableScroll } from './TableScroll'
+import { createToonMaterial } from '../utils/toon'
 
 const CACHE_BUST = import.meta.env.VITE_BUILD_HASH ? `?v=${String(import.meta.env.VITE_BUILD_HASH)}` : ''
 const MODEL_URL = `/models/final_house/house.glb${CACHE_BUST}`
@@ -317,30 +318,23 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
       if (!rule) return
 
       const apply = (mat: Material) => {
-        const cloned = mat.clone()
-        const m = cloned as THREE.MeshStandardMaterial
+        const toon = createToonMaterial(mat.clone())
         const base = new THREE.Color(rule.color)
         if (rule.variation && rule.variation > 0) {
           const seed = hashString(mesh.name)
-          m.color.copy(varyColor(base, rule.variation, seed))
+          toon.color.copy(varyColor(base, rule.variation, seed))
         } else {
-          m.color.copy(base)
+          toon.color.copy(base)
         }
         if (rule.emissive) {
-          m.emissive.set(rule.emissive)
-          m.emissiveIntensity = rule.emissiveIntensity ?? 0
-        }
-        if (rule.roughness !== undefined) {
-          m.roughness = rule.roughness
-        }
-        if (rule.metalness !== undefined) {
-          m.metalness = rule.metalness
+          toon.emissive.set(rule.emissive)
+          toon.emissiveIntensity = rule.emissiveIntensity ?? 0
         }
         if (rule.opacity !== undefined) {
-          m.opacity = rule.opacity
-          m.transparent = rule.opacity < 1.0
+          toon.opacity = rule.opacity
+          toon.transparent = rule.opacity < 1.0
         }
-        return cloned
+        return toon
       }
 
       if (Array.isArray(mesh.material)) {
