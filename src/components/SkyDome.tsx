@@ -54,15 +54,15 @@ const NEBULA_FRAGMENT = `
     float n1 = fbm(uv * 3.0 + vec2(t, t * 0.7));
     float n2 = fbm(uv * 5.0 - vec2(t * 1.1, t * 0.6) + n1);
 
-    vec3 baseSpace = vec3(0.012, 0.015, 0.035);
-    vec3 cloud1 = vec3(0.06, 0.08, 0.14);
-    vec3 cloud2 = vec3(0.04, 0.06, 0.12);
-    vec3 band = vec3(0.08, 0.09, 0.14);
+    vec3 baseSpace = vec3(0.008, 0.006, 0.006);
+    vec3 cloud1 = vec3(0.02, 0.015, 0.015);
+    vec3 cloud2 = vec3(0.015, 0.012, 0.012);
+    vec3 band = vec3(0.018, 0.014, 0.014);
 
     vec3 col = baseSpace;
-    col += cloud1 * n1 * (0.3 + 0.7 * equator);
-    col += cloud2 * n2 * (0.3 + 0.5 * equator);
-    col += band * equator * (n1 * n2) * 1.5;
+    col += cloud1 * n1 * 0.15;
+    col += cloud2 * n2 * 0.12;
+    col += band * equator * (n1 * n2) * 0.4;
 
     gl_FragColor = vec4(col, uOpacity);
   }

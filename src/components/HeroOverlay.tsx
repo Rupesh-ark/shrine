@@ -38,38 +38,47 @@ export function HeroOverlay({ progress }: HeroOverlayProps) {
         transition: 'opacity 0.1s linear',
       }}
     >
-      <h1
+      <div
         style={{
-          fontFamily: "'Playfair Display', 'IM Fell English', Georgia, serif",
-          fontSize: 'clamp(36px, 6vw, 80px)',
-          fontWeight: 700,
-          fontStyle: 'italic',
-          color: '#E8DCC8',
-          textShadow: '0 2px 20px rgba(0,0,0,0.6), 0 0 60px rgba(200,160,100,0.15)',
-          margin: 0,
-          letterSpacing: '1px',
-          lineHeight: 1.1,
-          textAlign: 'center',
+          padding: isMobile ? '12px 24px' : '20px 48px',
+          borderRadius: '12px',
+          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 70%)',
         }}
       >
-        Rupesh Pandey
-      </h1>
-      <p
-        style={{
-          fontFamily: "'Noto Serif JP', 'Yu Mincho', 'Georgia', serif",
-          fontSize: isMobile ? 'clamp(11px, 3vw, 14px)' : 'clamp(14px, 1.6vw, 20px)',
-          color: '#C4A77D',
-          letterSpacing: isMobile ? '2px' : '4px',
-          textTransform: 'uppercase',
-          marginTop: isMobile ? '12px' : '16px',
-          textShadow: '0 1px 8px rgba(0,0,0,0.5)',
-          textWrap: 'balance',
-          textAlign: 'center',
-          maxWidth: '100%',
-        }}
-      >
-        Generalist · Builder · Curious
-      </p>
+        <h1
+          style={{
+            fontFamily: "'Playfair Display', 'IM Fell English', Georgia, serif",
+            fontSize: 'clamp(36px, 6vw, 80px)',
+            fontWeight: 700,
+            fontStyle: 'italic',
+            color: '#F5E6D3',
+            textShadow: '0 2px 12px rgba(0,0,0,0.8), 0 4px 30px rgba(0,0,0,0.6), 0 0 80px rgba(200,160,100,0.2)',
+            WebkitTextStroke: '1px rgba(0,0,0,0.35)',
+            margin: 0,
+            letterSpacing: '1px',
+            lineHeight: 1.1,
+            textAlign: 'center',
+          }}
+        >
+          Rupesh Pandey
+        </h1>
+        <p
+          style={{
+            fontFamily: "'Noto Serif JP', 'Yu Mincho', 'Georgia', serif",
+            fontSize: isMobile ? 'clamp(11px, 3vw, 14px)' : 'clamp(14px, 1.6vw, 20px)',
+            color: '#D4B896',
+            letterSpacing: isMobile ? '2px' : '4px',
+            textTransform: 'uppercase',
+            marginTop: isMobile ? '12px' : '16px',
+            textShadow: '0 1px 6px rgba(0,0,0,0.7), 0 2px 12px rgba(0,0,0,0.5)',
+            textWrap: 'balance',
+            textAlign: 'center',
+            maxWidth: '100%',
+          }}
+        >
+          Generalist · Builder · Curious
+        </p>
+      </div>
       <div
         style={{
           marginTop: isMobile ? '32px' : '48px',

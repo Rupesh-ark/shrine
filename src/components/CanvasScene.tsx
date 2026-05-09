@@ -31,7 +31,7 @@ export default function CanvasScene({ progress, onHouseReady, entered }: ScenePr
       frameloop={entered ? 'always' : 'never'}
       performance={{ min: 0.5 }}
     >
-      <color attach="background" args={['#111625']} />
+      <color attach="background" args={['#0a0808']} />
       <PerformanceMonitor
         factor={1}
         flipflops={3}

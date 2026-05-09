@@ -3,6 +3,7 @@ import { Bvh, ContactShadows } from '@react-three/drei'
 import { useCameraAnimation } from '../hooks/useCameraAnimation'
 import type { SceneProps } from '../types'
 import { BlueSpirits, Fireflies } from './Atmosphere'
+import { BambooForest } from './BambooForest'
 import { HouseModel } from './HouseModel'
 import { ShaderPrecompiler } from './ShaderPrecompiler'
 import { SkyDome } from './SkyDome'
@@ -42,6 +43,10 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
 
       <Suspense fallback={null}>
         <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={() => { setModelReady(true); }} />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <BambooForest />
       </Suspense>
 
       <ShaderPrecompiler enabled={modelReady} onDone={() => { setShadersReady(true); }} />
