@@ -35,7 +35,10 @@ export default function CanvasScene({ progress, onHouseReady, entered }: ScenePr
       <PerformanceMonitor
         factor={1}
         flipflops={3}
-        onChange={({ factor }) => { setDpr(Math.max(0.75, Math.floor(0.75 + 1.25 * factor * 10) / 10)); }}
+        onChange={({ factor }) => {
+          const nextDpr = Math.min(1.5, Math.max(1, Math.round((1 + factor * 0.5) * 10) / 10))
+          setDpr(nextDpr)
+        }}
         onFallback={() => { setDpr(1); }}
       />
       <AdaptiveDpr pixelated />

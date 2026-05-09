@@ -22,6 +22,9 @@ function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserR
   audioRef.current = audio
 
   const ctx = new AudioContext()
+  void ctx.resume().catch((error: unknown) => {
+    console.warn('AudioContext resume failed', error)
+  })
   const source = ctx.createMediaElementSource(audio)
   const analyser = ctx.createAnalyser()
   analyser.fftSize = 64
@@ -45,16 +48,15 @@ export function App() {
   const progress = useScrollProgress(800)
 
   const handleEnter = useCallback(() => {
+    if (!audioStartedRef.current) {
+      audioStartedRef.current = true
+      initAudio(audioRef, analyserRef, muted)
+    }
+
     requestAnimationFrame(() => {
       startTransition(() => {
         setEntered(true)
       })
-    })
-
-    if (audioStartedRef.current) return
-    audioStartedRef.current = true
-    requestAnimationFrame(() => {
-      initAudio(audioRef, analyserRef, muted)
     })
   }, [muted])
 
