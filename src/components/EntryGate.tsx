@@ -7,11 +7,17 @@ interface EntryGateProps {
 
 type Phase = 'appear' | 'waiting' | 'idle' | 'spreading' | 'filled' | 'fading' | 'done'
 
-const SCENE_BG = '#1A0F08'
 const GATE_BG = '#F7F0DC'
 const LANTERN_RED = '#8B1A1A'
 const LANTERN_CORE = '#C42020'
 const AMBER = '#1A0F08'
+const BLOOD_SHADOW = '#2A0505'
+const BLOOD_DARK = '#4A0A0A'
+const BLOOD_MID = LANTERN_RED
+const BLOOD_SHEEN = '#F8C7B8'
+const DROP_BASE_GRADIENT = 'entry-gate-drop-base'
+const DROP_HIGHLIGHT_GRADIENT = 'entry-gate-drop-highlight'
+const DROP_SHADOW_GRADIENT = 'entry-gate-drop-shadow'
 
 function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
   const [phase, setPhase] = useState<Phase>('appear')
@@ -87,7 +93,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         pointerEvents: 'none',
       }} />
 
-      {/* === DARK INK BLOTS (match scene color) === */}
+      {/* === BLOOD INK SPREAD === */}
 
       {/* Primary central blot */}
       <div style={{
@@ -97,11 +103,12 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         width: '80vmin',
         height: '80vmin',
         transform: `translate(-50%, -50%) scale(${String(blotchScale)})`,
-        background: `radial-gradient(circle at 45% 40%, ${SCENE_BG}ee 0%, ${SCENE_BG}dd 35%, ${SCENE_BG}aa 65%, transparent 100%)`,
+        background: `radial-gradient(circle at 45% 40%, ${BLOOD_SHADOW}ee 0%, ${BLOOD_DARK}dd 35%, ${BLOOD_MID}aa 65%, transparent 100%)`,
         borderRadius: '43% 57% 52% 48% / 48% 43% 57% 52%',
         filter: 'blur(12px)',
         transition: 'transform 1.4s cubic-bezier(0.22, 0.61, 0.36, 1)',
         pointerEvents: 'none',
+        mixBlendMode: 'multiply',
       }} />
 
       {/* Secondary blot */}
@@ -112,11 +119,12 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         width: '60vmin',
         height: '60vmin',
         transform: `translate(-50%, -50%) scale(${String(secondaryScale)})`,
-        background: `radial-gradient(circle at 55% 55%, ${SCENE_BG}ee 0%, ${SCENE_BG}cc 50%, transparent 100%)`,
+        background: `radial-gradient(circle at 55% 55%, ${BLOOD_DARK}ee 0%, ${BLOOD_MID}cc 50%, transparent 100%)`,
         borderRadius: '58% 42% 48% 52% / 52% 58% 42% 48%',
         filter: 'blur(16px)',
         transition: 'transform 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s',
         pointerEvents: 'none',
+        mixBlendMode: 'multiply',
       }} />
 
       {/* Tertiary blot */}
@@ -127,11 +135,12 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         width: '55vmin',
         height: '55vmin',
         transform: `translate(-50%, -50%) scale(${String(tertiaryScale)})`,
-        background: `radial-gradient(circle at 40% 45%, ${SCENE_BG}dd 0%, ${SCENE_BG}bb 60%, transparent 100%)`,
+        background: `radial-gradient(circle at 40% 45%, ${BLOOD_SHADOW}dd 0%, ${BLOOD_DARK}bb 60%, transparent 100%)`,
         borderRadius: '48% 52% 58% 42% / 42% 48% 52% 58%',
         filter: 'blur(20px)',
         transition: 'transform 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s',
         pointerEvents: 'none',
+        mixBlendMode: 'multiply',
       }} />
 
       {/* Edge bleed — top */}
@@ -142,11 +151,12 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         width: '70vmin',
         height: '50vmin',
         transform: `translate(-50%, 0) scale(${String(edgeScale)})`,
-        background: `radial-gradient(ellipse at center, ${SCENE_BG}dd 0%, transparent 70%)`,
+        background: `radial-gradient(ellipse at center, ${BLOOD_DARK}dd 0%, transparent 70%)`,
         borderRadius: '50%',
         filter: 'blur(24px)',
         transition: 'transform 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s',
         pointerEvents: 'none',
+        mixBlendMode: 'multiply',
       }} />
 
       {/* Edge bleed — bottom */}
@@ -157,11 +167,12 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         width: '65vmin',
         height: '45vmin',
         transform: `translate(-50%, 0) scale(${String(edgeScale)})`,
-        background: `radial-gradient(ellipse at center, ${SCENE_BG}cc 0%, transparent 70%)`,
+        background: `radial-gradient(ellipse at center, ${BLOOD_SHADOW}cc 0%, transparent 70%)`,
         borderRadius: '50%',
         filter: 'blur(28px)',
         transition: 'transform 1.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.25s',
         pointerEvents: 'none',
+        mixBlendMode: 'multiply',
       }} />
 
       {/* Fine splatter dots */}
@@ -182,11 +193,12 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
           width: `${String(dot.s * 24)}px`,
           height: `${String(dot.s * 24)}px`,
           transform: `translate(-50%, -50%) scale(${String(dotScale)})`,
-          background: SCENE_BG,
+          background: BLOOD_SHADOW,
           borderRadius: `${String(40 + (i % 3) * 10)}% ${String(60 - (i % 3) * 10)}% ${String(50 + (i % 2) * 10)}% ${String(50 - (i % 2) * 10)}%`,
           filter: 'blur(1px)',
           transition: `transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) ${String(dot.d + 0.3)}s`,
           pointerEvents: 'none',
+          mixBlendMode: 'multiply',
         }} />
       ))}
 
@@ -207,87 +219,66 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         {/* Red 3D Sphere */}
         <div style={{
           position: 'relative',
-          width: '64px',
-          height: '64px',
+          width: '72px',
+          height: '108px',
+          filter: 'drop-shadow(0 0 18px rgba(139,26,26,0.16))',
         }}>
           {/* Ambient glow */}
           <div style={{
             position: 'absolute',
-            inset: '-28px',
+            inset: '-28px -18px -14px',
             borderRadius: '50%',
-            background: `radial-gradient(circle, ${LANTERN_RED}22 0%, transparent 65%)`,
-            animation: isIdle ? 'sphereBreathe 4s ease-in-out infinite' : 'none',
+            background: `radial-gradient(circle at 50% 42%, ${LANTERN_RED}24 0%, transparent 70%)`,
+            animation: isIdle ? 'dropGlow 4.5s ease-in-out infinite' : 'none',
           }} />
 
-          {/* The sphere — layered for 3D depth */}
-          <div style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            position: 'relative',
-            transform: (isIdle || isWaiting) ? 'scale(1)' : 'scale(0)',
-            transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}>
-            {/* Base sphere body */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              borderRadius: '50%',
-              background: `radial-gradient(circle at 35% 30%, ${LANTERN_CORE} 0%, ${LANTERN_RED} 35%, #8B1515 70%, #3A0A0A 100%)`,
-              boxShadow: `inset -6px -6px 14px rgba(0,0,0,0.5), inset 4px 4px 10px rgba(255,200,180,0.25), 0 0 20px ${LANTERN_RED}44`,
-            }} />
+          <svg
+            viewBox="0 0 84 112"
+            width="76"
+            height="102"
+            aria-hidden
+            style={{
+              position: 'relative',
+              display: 'block',
+              overflow: 'visible',
+              transformOrigin: '50% 68%',
+              animation: isIdle ? 'dropSquish 5s ease-in-out infinite' : 'none',
+              transform: (isIdle || isWaiting) ? 'scale(1)' : 'scale(0)',
+              transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}
+          >
+            <defs>
+              <radialGradient id={DROP_BASE_GRADIENT} cx="34%" cy="26%" r="76%">
+                <stop offset="0%" stopColor={BLOOD_SHEEN} />
+                <stop offset="34%" stopColor={LANTERN_CORE} />
+                <stop offset="72%" stopColor={LANTERN_RED} />
+                <stop offset="100%" stopColor={BLOOD_SHADOW} />
+              </radialGradient>
+              <radialGradient id={DROP_HIGHLIGHT_GRADIENT} cx="28%" cy="22%" r="34%">
+                <stop offset="0%" stopColor="rgba(255,250,240,0.95)" />
+                <stop offset="55%" stopColor="rgba(255,250,240,0.32)" />
+                <stop offset="100%" stopColor="rgba(255,250,240,0)" />
+              </radialGradient>
+              <radialGradient id={DROP_SHADOW_GRADIENT} cx="62%" cy="66%" r="52%">
+                <stop offset="0%" stopColor="rgba(42,5,5,0)" />
+                <stop offset="78%" stopColor="rgba(42,5,5,0.16)" />
+                <stop offset="100%" stopColor="rgba(42,5,5,0.52)" />
+              </radialGradient>
+            </defs>
 
-            {/* Specular highlight — sharp */}
-            <div style={{
-              position: 'absolute',
-              top: '18%',
-              left: '26%',
-              width: '22%',
-              height: '16%',
-              borderRadius: '50%',
-              background: 'rgba(255,245,230,0.7)',
-              filter: 'blur(1px)',
-              transform: 'rotate(-20deg)',
-            }} />
-
-            {/* Secondary softer highlight */}
-            <div style={{
-              position: 'absolute',
-              top: '28%',
-              left: '20%',
-              width: '36%',
-              height: '26%',
-              borderRadius: '50%',
-              background: 'rgba(255,220,200,0.18)',
-              filter: 'blur(4px)',
-              transform: 'rotate(-15deg)',
-            }} />
-
-            {/* Rim light — opposite side */}
-            <div style={{
-              position: 'absolute',
-              bottom: '12%',
-              right: '16%',
-              width: '30%',
-              height: '24%',
-              borderRadius: '50%',
-              background: 'rgba(255,150,140,0.15)',
-              filter: 'blur(5px)',
-              transform: 'rotate(20deg)',
-            }} />
-
-            {/* Core inner glow */}
-            <div style={{
-              position: 'absolute',
-              top: '32%',
-              left: '32%',
-              width: '28%',
-              height: '22%',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.12)',
-              filter: 'blur(6px)',
-            }} />
-          </div>
+            <g transform="rotate(180 42 56)">
+              <path
+                d="M41 6C52 6 62 13 67 23C71 31 72 41 69 50C66 59 60 68 54 75C49 81 46 88 43 98C42 102 41 107 41 112C41 107 40 102 39 98C36 88 33 81 28 75C22 68 16 59 13 50C10 41 11 31 15 23C20 13 30 6 41 6Z"
+                fill={`url(#${DROP_BASE_GRADIENT})`}
+              />
+              <ellipse cx="30" cy="22" rx="8" ry="5" fill={`url(#${DROP_HIGHLIGHT_GRADIENT})`} opacity="0.9" />
+              <ellipse cx="50" cy="63" rx="14" ry="18" fill={`url(#${DROP_SHADOW_GRADIENT})`} opacity="0.55" />
+              <path
+                d="M41 6C48 7 55 11 59 18C54 16 49 15 45 14C42 13 40 13 37 14C33 15 28 16 23 18C27 11 34 7 41 6Z"
+                fill="rgba(255,255,255,0.06)"
+              />
+            </g>
+          </svg>
         </div>
 
         {/* Text */}
@@ -318,7 +309,7 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
             letterSpacing: '3px',
             margin: 0,
           }}>
-            {isWaiting ? 'Preparing shrine...' : 'Touch to begin'}
+            {isWaiting ? 'Preparing contract...' : 'Touch to begin'}
           </p>
         </div>
       </div>
@@ -355,9 +346,15 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
           0%, 100% { transform: scale(1); opacity: 0.4; }
           50% { transform: scale(1.15); opacity: 0; }
         }
-        @keyframes sphereBreathe {
-          0%, 100% { transform: scale(1); opacity: 0.6; }
-          50% { transform: scale(1.06); opacity: 1; }
+        @keyframes dropGlow {
+          0%, 100% { transform: scale(1); opacity: 0.55; }
+          50% { transform: scale(1.08); opacity: 1; }
+        }
+        @keyframes dropSquish {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          25% { transform: scale(1.02, 0.98) rotate(-1deg); }
+          50% { transform: scale(0.98, 1.04) rotate(1deg); }
+          75% { transform: scale(1.03, 0.99) rotate(-0.5deg); }
         }
       `}</style>
     </div>
