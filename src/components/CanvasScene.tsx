@@ -5,9 +5,9 @@ import { AdaptiveDpr, AdaptiveEvents, PerformanceMonitor, Preload } from '@react
 import { Scene } from './Scene'
 import { PostProcessing } from './PostProcessing'
 import type { SceneProps } from '../types'
+import { useIsMobile } from '../hooks/useIsMobile'
 
-function getCamera() {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+function getCamera(isMobile: boolean) {
   return {
     position: isMobile ? ([0, 7.5, 1.5] as const) : ([0, 7.0, 1.5] as const),
     fov: isMobile ? 62 : 50,
@@ -16,10 +16,12 @@ function getCamera() {
 
 export default function CanvasScene({ progress, onHouseReady, entered }: SceneProps) {
   const [dpr, setDpr] = useState(1.5)
+  const isMobile = useIsMobile()
+  const camera = getCamera(isMobile)
 
   return (
     <Canvas
-      camera={{ position: [...getCamera().position], fov: getCamera().fov }}
+      camera={{ position: [...camera.position], fov: camera.fov }}
       dpr={[1, dpr]}
       gl={{ antialias: true, powerPreference: 'high-performance', premultipliedAlpha: false }}
       onCreated={({ gl }) => {

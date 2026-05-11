@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 interface HeroOverlayProps {
   progress: number
@@ -17,7 +18,7 @@ export function HeroOverlay({ progress }: HeroOverlayProps) {
     return -((progress - 0.02) / (0.18 - 0.02)) * 24
   }, [progress])
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isMobile = useIsMobile()
 
   return (
     <div

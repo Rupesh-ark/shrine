@@ -1,5 +1,6 @@
 import { JP_SERIF } from '../../constants/fonts'
 import type { ScrollSection } from '../../types'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 interface SideNavProps {
   activeIndex: number
@@ -8,7 +9,7 @@ interface SideNavProps {
 }
 
 export function SideNav({ activeIndex, onNavigate, sections }: SideNavProps) {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isMobile = useIsMobile()
   if (isMobile) return null
   return (
     <div style={{

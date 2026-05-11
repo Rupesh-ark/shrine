@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 interface ProgressOverlayProps {
   progress: number
 }
 
 export function ProgressOverlay({ progress }: ProgressOverlayProps) {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isMobile = useIsMobile()
 
   const phase = useMemo(() => {
     if (progress < 0.05) return 'enter'

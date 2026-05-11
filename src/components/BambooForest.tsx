@@ -1,9 +1,10 @@
 import { useGLTF, Clone } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { GLTF } from 'three-stdlib'
 import { createToonMaterial } from '../utils/toon'
+import { useIsMobile } from '../hooks/useIsMobile'
 
 const BAMBOO_URL = '/models/final_house/Bamboo.glb'
 const SIZE_MULTIPLIER = 9
@@ -103,38 +104,23 @@ const DESKTOP_CLUMPS: BambooClump[] = rawClumps.map((c) => ({
 
 const MOBILE_CLUMPS: BambooClump[] = DESKTOP_CLUMPS.filter((_, i) => i % 2 === 0)
 
-function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < 768
-  })
-
-  useEffect(() => {
-    const onResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    window.addEventListener('resize', onResize)
-    return () => {
-      window.removeEventListener('resize', onResize)
-    }
-  }, [])
-
-  return isMobile
-}
-
 export function BambooForest() {
-  const { scene } = useGLTF(BAMBOO_URL) as GLTF
+  const { scene: loadedScene } = useGLTF(BAMBOO_URL) as GLTF
+  const scene = useMemo(() => loadedScene.clone(true), [loadedScene])
   const isMobile = useIsMobile()
   const camPos = useRef(new THREE.Vector3())
   const clumpPos = useRef(new THREE.Vector3())
 
   useLayoutEffect(() => {
+    const ownedMaterials: THREE.Material[] = []
+
     scene.traverse((obj) => {
       if (obj.type !== 'Mesh') return
       const mesh = obj as THREE.Mesh
       const apply = (mat: THREE.Material) => {
-        const toon = createToonMaterial(mat.clone())
+        const toon = createToonMaterial(mat)
         toon.color.set('#8B0000')
+        ownedMaterials.push(toon)
         return toon
       }
       if (Array.isArray(mesh.material)) {
@@ -143,6 +129,12 @@ export function BambooForest() {
         mesh.material = apply(mesh.material)
       }
     })
+
+    return () => {
+      ownedMaterials.forEach((material) => {
+        material.dispose()
+      })
+    }
   }, [scene])
 
   const baseClumps = isMobile ? MOBILE_CLUMPS : DESKTOP_CLUMPS

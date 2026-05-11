@@ -70,7 +70,7 @@ export function ScrollOverlay({ progress }: { progress: number }) {
     )
     sectionRefs.current.forEach(el => { if (el) observer.observe(el) })
     return () => { observer.disconnect() }
-  }, [revealProgress])
+  }, [isVisible])
 
   useEffect(() => {
     if (!isVisible) return

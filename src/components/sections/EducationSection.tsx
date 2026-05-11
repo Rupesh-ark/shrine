@@ -3,9 +3,10 @@ import { INK_BLACK, MEDIUM_WOOD } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
 import { memo } from 'react'
 import { EDUCATION } from './data'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 export const EducationSection = memo(function EducationSection() {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isMobile = useIsMobile()
 
   return (
     <section style={{

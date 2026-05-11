@@ -6,6 +6,7 @@ import { ProgressOverlay } from './components/ProgressOverlay'
 import { MusicOverlay } from './components/MusicOverlay'
 import { EntryGate } from './components/EntryGate'
 import { GRAIN_URL } from './constants/grain'
+import { useIsMobile } from './hooks/useIsMobile'
 
 const CanvasScene = lazy(() => import('./components/CanvasScene'))
 
@@ -46,6 +47,11 @@ export function App() {
   const analyserRef = useRef<AnalyserNode | null>(null)
   const audioStartedRef = useRef(false)
   const progress = useScrollProgress(800)
+  const isMobile = useIsMobile()
+
+  const handleHouseReady = useCallback(() => {
+    setHouseReady(true)
+  }, [])
 
   const handleEnter = useCallback(() => {
     if (!audioStartedRef.current) {
@@ -74,7 +80,7 @@ export function App() {
     <div style={{ position: 'fixed', inset: 0, isolation: 'isolate' }}>
       <EntryGate onEnter={handleEnter} ready={houseReady} />
       <Suspense fallback={null}>
-        <CanvasScene progress={progress} onHouseReady={() => { setHouseReady(true); }} entered={entered} />
+        <CanvasScene progress={progress} onHouseReady={handleHouseReady} entered={entered} />
       </Suspense>
       <div
         aria-hidden
@@ -106,7 +112,7 @@ export function App() {
         }}
       />
       {/* Mobile corner vignette — softens house edges during ortho phase */}
-      {typeof window !== 'undefined' && window.innerWidth < 768 && (
+      {isMobile && (
         <div
           aria-hidden
           style={{

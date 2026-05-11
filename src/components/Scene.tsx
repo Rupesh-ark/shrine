@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { Bvh, ContactShadows } from '@react-three/drei'
 import { useCameraAnimation } from '../hooks/useCameraAnimation'
 import type { SceneProps } from '../types'
@@ -19,6 +19,14 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
   const { groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress, entered)
   const [modelReady, setModelReady] = useState(false)
   const [shadersReady, setShadersReady] = useState(false)
+
+  const handleModelReady = useCallback(() => {
+    setModelReady(true)
+  }, [])
+
+  const handleShadersReady = useCallback(() => {
+    setShadersReady(true)
+  }, [])
 
   useEffect(() => {
     if (modelReady && shadersReady) {
@@ -42,14 +50,14 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       <TerrainGround overlayBaseY={overlayBaseY} />
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={() => { setModelReady(true); }} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={handleModelReady} />
       </Suspense>
 
       <Suspense fallback={null}>
         <BambooForest />
       </Suspense>
 
-      <ShaderPrecompiler enabled={modelReady} onDone={() => { setShadersReady(true); }} />
+      <ShaderPrecompiler enabled={modelReady} onDone={handleShadersReady} />
 
       <ContactShadows
         position={[0, overlayBaseY, 0]}
