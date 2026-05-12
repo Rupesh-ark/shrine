@@ -40,6 +40,8 @@ export interface ScreenParticle {
   life: number
   maxLife: number
   color: string
+  rotation: number
+  rotationSpeed: number
 }
 
 export interface LanternLightData {

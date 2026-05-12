@@ -292,9 +292,6 @@ function animateScreenParticles(
   if (!ctx) return
   const w = canvas.width
   const h = canvas.height
-  const sway = Math.sin(t * 0.35) * 6
-  const pulse = Math.sin(t * 9) * 0.5 + 0.5
-  const bloodLift = ritualProgress * 0.16 + pulse * ritualProgress * 0.08
 
   // Dark warm base (slightly lifted so red can pop)
   ctx.fillStyle = '#1c1111'
@@ -310,7 +307,9 @@ function animateScreenParticles(
   ctx.fillRect(0, 0, w, h)
 
   if (ritualProgress > 0) {
-    ctx.fillStyle = `rgba(135, 3, 3, ${String(bloodLift)})`
+    const pulse = Math.sin(t * 9) * 0.5 + 0.5
+    const lift = ritualProgress * 0.16 + pulse * ritualProgress * 0.08
+    ctx.fillStyle = `rgba(135, 3, 3, ${String(lift)})`
     ctx.fillRect(0, 0, w, h)
   }
 
@@ -328,106 +327,57 @@ function animateScreenParticles(
   }
   ctx.globalAlpha = 1
 
-  // Blood bamboo stalks — brightened for contrast
-  const stalks = [
-    { x: 0.18, w: 6, h: 0.72, lean: 0.04 },
-    { x: 0.24, w: 5, h: 0.85, lean: -0.02 },
-    { x: 0.32, w: 7, h: 0.68, lean: 0.03 },
-    { x: 0.42, w: 4.5, h: 0.78, lean: -0.03 },
-    { x: 0.52, w: 6.5, h: 0.65, lean: 0.05 },
-    { x: 0.62, w: 5, h: 0.82, lean: -0.04 },
-    { x: 0.72, w: 6, h: 0.7, lean: 0.02 },
-    { x: 0.82, w: 4.5, h: 0.75, lean: -0.02 },
-  ]
-
-  for (const s of stalks) {
-    const sx = w * s.x + sway * s.lean * 30
-    const sw = s.w
-    const sh = h * s.h
-    const sy = h - sh * 0.15
-
-    // Outer glow for each stalk
-    ctx.fillStyle = 'rgba(140, 16, 16, 0.25)'
-    ctx.fillRect(sx - sw / 2 - 2, sy - sh, sw + 4, sh)
-
-    ctx.fillStyle = `rgba(185, 18, 18, ${String(0.82 + ritualProgress * 0.18)})`
-    ctx.fillRect(sx - sw / 2, sy - sh, sw, sh)
-
-    // Joint rings
-    ctx.fillStyle = 'rgba(90, 10, 10, 0.95)'
-    for (let j = 0; j < 5; j++) {
-      const jy = sy - sh * (0.15 + j * 0.18)
-      ctx.fillRect(sx - sw / 2 - 1, jy, sw + 2, 1.5)
-    }
-  }
-
-  // Distant bamboo leaves — brightened
-  const clusters = [
-    { x: 0.15, y: 0.22, r: 18 },
-    { x: 0.28, y: 0.18, r: 22 },
-    { x: 0.45, y: 0.25, r: 16 },
-    { x: 0.58, y: 0.15, r: 20 },
-    { x: 0.72, y: 0.22, r: 18 },
-    { x: 0.85, y: 0.19, r: 15 },
-  ]
-
-  for (const c of clusters) {
-    const cx = w * c.x + Math.sin(t * 0.4 + c.x * 5) * 5
-    const cy = h * c.y + Math.cos(t * 0.35 + c.y * 4) * 4
-    const cr = c.r * (1 + Math.sin(t * 0.8 + c.x * 3) * 0.08)
-
-    ctx.fillStyle = 'rgba(170, 24, 24, 0.7)'
-    for (let i = 0; i < 5; i++) {
-      const angle = (i / 5) * Math.PI * 2 + t * 0.2 + c.x
-      ctx.beginPath()
-      ctx.ellipse(
-        cx + Math.cos(angle) * cr * 0.5,
-        cy + Math.sin(angle) * cr * 0.3,
-        cr * 0.35,
-        cr * 0.12,
-        angle + Math.PI / 4,
-        0,
-        Math.PI * 2,
-      )
-      ctx.fill()
-    }
-  }
-
-  // Falling embers
+  // Falling sakura petals
   for (const p of particles) {
-    const drift = Math.sin(t * 0.6 + p.life * 0.06) * 0.8
-    p.x += p.vx + drift
     p.y += p.vy
+    p.x += p.vx + Math.sin(t * 0.5 + p.life * 0.04) * 0.3
     p.life++
+    p.rotation += p.rotationSpeed
 
-    if (p.life > p.maxLife || p.y < -30) {
+    if (p.life > p.maxLife || p.y > h + 30) {
       p.x = Math.random() * w
-      p.y = h + 30
+      p.y = -20
       p.life = 0
-      p.maxLife = 60 + Math.floor(Math.random() * 80)
+      p.maxLife = 80 + Math.floor(Math.random() * 120)
+      p.rotation = Math.random() * Math.PI * 2
     }
 
-    const fadeIn = Math.min(1, p.life / 15)
-    const fadeOut = Math.min(1, (p.maxLife - p.life) / 15)
-    const alpha = fadeIn * fadeOut * (1 + ritualProgress * 0.45)
+    const fadeIn = Math.min(1, p.life / 12)
+    const fadeOut = Math.min(1, (p.maxLife - p.life) / 18)
+    const alpha = fadeIn * fadeOut * (0.65 + ritualProgress * 0.35)
 
-    const angle = (p.life * 0.08 + p.x * 0.01) % (Math.PI * 2)
     ctx.save()
     ctx.translate(p.x, p.y)
-    ctx.rotate(angle)
+    ctx.rotate(p.rotation)
+    ctx.globalAlpha = alpha
 
-    // Ember glow
-    ctx.globalAlpha = alpha * 0.35
-    ctx.fillStyle = p.color
+    // Soft outer glow
+    ctx.fillStyle = 'rgba(200, 30, 30, 0.12)'
     ctx.beginPath()
-    ctx.arc(0, 0, p.r * 3.5, 0, Math.PI * 2)
+    ctx.ellipse(0, 0, p.r * 1.8, p.r * 1.2, 0, 0, Math.PI * 2)
     ctx.fill()
 
-    // Ember core
-    ctx.globalAlpha = alpha
-    ctx.fillStyle = '#ffe0c0'
+    // Petal body
+    ctx.fillStyle = p.color
     ctx.beginPath()
-    ctx.ellipse(0, 0, p.r * 1.2, p.r * 0.8, 0, 0, Math.PI * 2)
+    ctx.moveTo(0, -p.r)
+    ctx.bezierCurveTo(-p.r * 0.65, -p.r * 0.35, -p.r * 0.65, p.r * 0.25, 0, p.r * 0.45)
+    ctx.bezierCurveTo(p.r * 0.65, p.r * 0.25, p.r * 0.65, -p.r * 0.35, 0, -p.r)
+    ctx.closePath()
+    ctx.fill()
+
+    // Center vein
+    ctx.strokeStyle = 'rgba(255, 180, 180, 0.25)'
+    ctx.lineWidth = 0.6
+    ctx.beginPath()
+    ctx.moveTo(0, -p.r * 0.65)
+    ctx.lineTo(0, p.r * 0.3)
+    ctx.stroke()
+
+    // Tip highlight
+    ctx.fillStyle = 'rgba(255, 140, 140, 0.3)'
+    ctx.beginPath()
+    ctx.ellipse(0, -p.r * 0.55, p.r * 0.2, p.r * 0.1, 0, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.restore()
@@ -632,16 +582,19 @@ export function HouseModel({
       }
 
       const particles: typeof screenParticlesRef.current = []
-      for (let i = 0; i < 40; i++) {
+      const colors = ['#cc2222', '#dd3344', '#bb1122', '#ee4455', '#aa1122']
+      for (let i = 0; i < 35; i++) {
         particles.push({
           x: Math.random() * 256,
           y: Math.random() * 512,
-          r: 2 + Math.random() * 4,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: -0.3 - Math.random() * 0.8,
+          r: 4 + Math.random() * 6,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: 0.35 + Math.random() * 0.7,
           life: Math.floor(Math.random() * 100),
-          maxLife: 60 + Math.floor(Math.random() * 80),
-          color: Math.random() > 0.5 ? '#e04020' : '#ff8844',
+          maxLife: 80 + Math.floor(Math.random() * 120),
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * 0.025,
         })
       }
       screenParticlesRef.current = particles
