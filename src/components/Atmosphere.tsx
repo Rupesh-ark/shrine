@@ -6,8 +6,31 @@ import { seededRandom } from '../utils/random'
 import { get2dContext } from '../utils/canvas'
 import type { FlameData, RedSpiritsProps } from '../types'
 
-const flameTexture = new THREE.TextureLoader().load('/images/flame.png')
-flameTexture.colorSpace = THREE.SRGBColorSpace
+function createGoGlyphTexture(): THREE.CanvasTexture {
+  const size = 128
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = get2dContext(canvas)
+  ctx.clearRect(0, 0, size, size)
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = "bold 82px 'Noto Serif JP', 'Yu Mincho', serif"
+  ctx.lineWidth = 8
+  ctx.strokeStyle = 'rgba(24, 0, 48, 0.95)'
+  ctx.fillStyle = '#a55cff'
+  ctx.shadowColor = 'rgba(165, 92, 255, 0.85)'
+  ctx.shadowBlur = 18
+  ctx.strokeText('ゴ', size / 2, size / 2 + 2)
+  ctx.fillText('ゴ', size / 2, size / 2 + 2)
+
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.colorSpace = THREE.SRGBColorSpace
+  tex.premultiplyAlpha = false
+  return tex
+}
+
+const goGlyphTexture = createGoGlyphTexture()
 
 // ── BlueSpirits: batched into a single GPU Points system ──
 
@@ -88,7 +111,7 @@ function generateFlameData(): FlameData[] {
   return flames
 }
 
-export function BlueSpirits() {
+export function BlueSpirits({ active = true }: { active?: boolean }) {
   const flames = useMemo(() => generateFlameData(), [])
   const materialRef = useRef<THREE.ShaderMaterial>(null)
 
@@ -122,7 +145,7 @@ export function BlueSpirits() {
       fragmentShader: SPIRIT_FRAGMENT_SHADER,
       uniforms: {
         uTime: { value: 0 },
-        uMap: { value: flameTexture },
+        uMap: { value: goGlyphTexture },
       },
       transparent: true,
       depthWrite: false,
@@ -133,13 +156,14 @@ export function BlueSpirits() {
   }, [flames])
 
   useFrame((state) => {
+    if (!active) return
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime
     }
   })
 
   return (
-    <points geometry={geometry}>
+    <points geometry={geometry} visible={active}>
       <primitive object={material} ref={materialRef} attach="material" />
     </points>
   )
@@ -169,7 +193,7 @@ function createRedGlowTexture(): THREE.CanvasTexture {
 
 const redGlowTexture = createRedGlowTexture()
 
-function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
+function RedFlameSprite({ position, active }: { position: THREE.Vector3; active: boolean }) {
   const spriteRef = useRef<THREE.Sprite>(null)
   const lightRef = useRef<THREE.PointLight>(null)
 
@@ -193,6 +217,7 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
   )
 
   useFrame((state) => {
+    if (!active) return
     if (!spriteRef.current || !lightRef.current) return
     const t = state.clock.elapsedTime
 
@@ -211,7 +236,7 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
   })
 
   return (
-    <group position={[data.basePosition.x, data.basePosition.y, data.basePosition.z]}>
+    <group position={[data.basePosition.x, data.basePosition.y, data.basePosition.z]} visible={active}>
       <sprite ref={spriteRef}>
         <spriteMaterial
           map={redGlowTexture}
@@ -226,11 +251,11 @@ function RedFlameSprite({ position }: { position: THREE.Vector3 }) {
   )
 }
 
-export function RedSpirits({ positions }: RedSpiritsProps) {
+export function RedSpirits({ positions, active = true }: RedSpiritsProps & { active?: boolean }) {
   return (
-    <group>
+    <group visible={active}>
       {positions.map((pos, i) => (
-        <RedFlameSprite key={`red-flame-${String(i)}`} position={new THREE.Vector3(...pos)} />
+        <RedFlameSprite key={`red-flame-${String(i)}`} position={new THREE.Vector3(...pos)} active={active} />
       ))}
     </group>
   )

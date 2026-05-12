@@ -1,6 +1,5 @@
-import { lazy, startTransition, Suspense, useCallback, useRef, useState } from 'react'
+import { lazy, startTransition, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useScrollProgress } from './hooks/useScrollProgress'
-import { ScrollOverlay } from './components/ScrollOverlay'
 import { HeroOverlay } from './components/HeroOverlay'
 import { ProgressOverlay } from './components/ProgressOverlay'
 import { MusicOverlay } from './components/MusicOverlay'
@@ -9,13 +8,14 @@ import { GRAIN_URL } from './constants/grain'
 import { useIsMobile } from './hooks/useIsMobile'
 
 const CanvasScene = lazy(() => import('./components/CanvasScene'))
-
-void import('./components/CanvasScene')
+const ScrollOverlay = lazy(() =>
+  import('./components/ScrollOverlay').then((module) => ({ default: module.ScrollOverlay })),
+)
 
 function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserRef: React.RefObject<AnalyserNode | null>, muted: boolean) {
   if (analyserRef.current) return
 
-  const audio = new Audio('/music/piano.mp3')
+  const audio = new Audio('/music/glitch.mp3')
   audio.loop = true
   audio.volume = 0.45
   audio.preload = 'none'
@@ -48,6 +48,12 @@ export function App() {
   const audioStartedRef = useRef(false)
   const progress = useScrollProgress(800)
   const isMobile = useIsMobile()
+
+  useEffect(() => {
+    if (entered) {
+      void import('./components/ScrollOverlay')
+    }
+  }, [entered])
 
   const handleHouseReady = useCallback(() => {
     setHouseReady(true)
@@ -129,8 +135,10 @@ export function App() {
         />
       )}
       <HeroOverlay progress={progress} />
-      <ProgressOverlay progress={progress} />
-      <ScrollOverlay progress={progress} />
+      {import.meta.env.DEV && <ProgressOverlay progress={progress} />}
+      <Suspense fallback={null}>
+        {entered ? <ScrollOverlay progress={progress} /> : null}
+      </Suspense>
       <MusicOverlay muted={muted} onToggleMute={handleToggleMute} />
     </div>
   )

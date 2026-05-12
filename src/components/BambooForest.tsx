@@ -17,6 +17,11 @@ interface BambooClump {
   scale: number
 }
 
+interface BambooForestProps {
+  active?: boolean
+  visible?: boolean
+}
+
 /** Full layout with your tuned positions + density additions */
 const rawClumps: BambooClump[] = [
   // ── Back wall (pushed to far left & right of house) ──
@@ -104,7 +109,7 @@ const DESKTOP_CLUMPS: BambooClump[] = rawClumps.map((c) => ({
 
 const MOBILE_CLUMPS: BambooClump[] = DESKTOP_CLUMPS.filter((_, i) => i % 2 === 0)
 
-export function BambooForest() {
+export function BambooForest({ active = true, visible = true }: BambooForestProps) {
   const { scene: loadedScene } = useGLTF(BAMBOO_URL) as GLTF
   const scene = useMemo(() => loadedScene.clone(true), [loadedScene])
   const isMobile = useIsMobile()
@@ -144,6 +149,7 @@ export function BambooForest() {
   const lastCullRef = useRef(0)
 
   useFrame((state) => {
+    if (!active) return
     const now = performance.now()
     if (now - lastCullRef.current < 400) return
     lastCullRef.current = now
@@ -160,7 +166,7 @@ export function BambooForest() {
   })
 
   return (
-    <>
+    <group visible={visible}>
       {baseClumps.map((clump, i) => (
         <Clone
           key={i}
@@ -171,8 +177,6 @@ export function BambooForest() {
           scale={clump.scale}
         />
       ))}
-    </>
+    </group>
   )
 }
-
-useGLTF.preload(BAMBOO_URL)

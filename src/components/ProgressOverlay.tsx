@@ -7,6 +7,7 @@ interface ProgressOverlayProps {
 
 export function ProgressOverlay({ progress }: ProgressOverlayProps) {
   const isMobile = useIsMobile()
+  const progressLabel = progress.toFixed(3)
 
   const phase = useMemo(() => {
     if (progress < 0.05) return 'enter'
@@ -49,6 +50,62 @@ export function ProgressOverlay({ progress }: ProgressOverlayProps) {
         width: isMobile ? '28px' : '40px',
       }}
     >
+      <div
+        style={{
+          position: 'fixed',
+          top: isMobile ? '12px' : '16px',
+          left: isMobile ? '12px' : '16px',
+          zIndex: 11,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          minWidth: isMobile ? '92px' : '112px',
+          padding: isMobile ? '8px 10px' : '10px 12px',
+          border: '1px solid rgba(196,167,125,0.22)',
+          borderRadius: '10px',
+          background: 'linear-gradient(180deg, rgba(10,12,18,0.78), rgba(10,12,18,0.62))',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.28)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          pointerEvents: 'none',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
+            fontSize: isMobile ? '9px' : '10px',
+            letterSpacing: '1.8px',
+            textTransform: 'uppercase',
+            color: '#8A9AB0',
+            opacity: 0.86,
+          }}
+        >
+          Progress
+        </span>
+        <span
+          style={{
+            fontFamily: "'Playfair Display', 'IM Fell English', Georgia, serif",
+            fontSize: isMobile ? '20px' : '24px',
+            lineHeight: 1,
+            color: '#F5E6D3',
+            textShadow: '0 1px 8px rgba(0,0,0,0.45)',
+          }}
+        >
+          {progressLabel}
+        </span>
+        <span
+          style={{
+            fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
+            fontSize: isMobile ? '9px' : '10px',
+            letterSpacing: '1.4px',
+            color: '#C4A77D',
+            opacity: 0.88,
+          }}
+        >
+          {phase} · {subLabel}
+        </span>
+      </div>
+
       {/* Track */}
       <div
         style={{

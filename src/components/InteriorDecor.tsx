@@ -1,10 +1,83 @@
 import * as THREE from 'three'
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useRef } from 'react'
 import { useTexture } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 
 interface InteriorDecorProps {
   floorY: number
   centerZ: number
+  progress?: number
+}
+
+function createMenaceTextTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2D context unavailable')
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = "bold 92px 'Noto Serif JP', 'Yu Mincho', serif"
+  ctx.lineWidth = 12
+  ctx.strokeStyle = 'rgba(18, 0, 35, 0.9)'
+  ctx.fillStyle = '#b54dff'
+  ctx.shadowColor = 'rgba(168, 72, 255, 0.85)'
+  ctx.shadowBlur = 24
+  ctx.strokeText('ゴ', canvas.width * 0.5, canvas.height * 0.5)
+  ctx.fillText('ゴ', canvas.width * 0.5, canvas.height * 0.5)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.premultiplyAlpha = false
+  texture.minFilter = THREE.LinearFilter
+  texture.magFilter = THREE.LinearFilter
+  return texture
+}
+
+function MenaceText({ side }: { side: -1 | 1 }) {
+  const groupRef = useRef<THREE.Group>(null)
+  const materialRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([])
+  const texture = useMemo(() => createMenaceTextTexture(), [])
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime
+    if (groupRef.current) {
+      groupRef.current.rotation.z = side * 0.18 + t * side * 0.8
+    }
+    for (let i = 0; i < materialRefs.current.length; i++) {
+      const mat = materialRefs.current[i]
+      if (!mat) continue
+      const pulse = Math.sin(t * 5.2 + i + side) * 0.5 + 0.5
+      mat.opacity = 0.48 + pulse * 0.34
+    }
+  })
+
+  return (
+    <group ref={groupRef} position={[0, 0, 0.018]} rotation={[0, 0, side * 0.18]}>
+      {Array.from({ length: 10 }, (_, i) => {
+        const angle = (i / 10) * Math.PI * 2
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(angle) * 0.135, Math.sin(angle) * 0.18, 0]}
+            rotation={[0, 0, angle + Math.PI * 0.5]}
+          >
+            <planeGeometry args={[0.07, 0.07]} />
+            <meshBasicMaterial
+              ref={(mat) => { materialRefs.current[i] = mat }}
+              map={texture}
+              transparent
+              opacity={0.75}
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+        )
+      })}
+    </group>
+  )
 }
 
 function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
@@ -40,6 +113,7 @@ function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
           <boxGeometry args={[0.22, 0.28, 0.008]} />
           <meshStandardMaterial map={scrollTex} roughness={0.85} />
         </mesh>
+        <MenaceText side={1} />
       </group>
 
       <group position={[-0.20, floorY + 0.6, centerZ - 1.68]}>
@@ -53,6 +127,7 @@ function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
           <boxGeometry args={[0.22, 0.28, 0.008]} />
           <meshStandardMaterial map={leftScrollTex} roughness={0.85} />
         </mesh>
+        <MenaceText side={-1} />
       </group>
 
       {/* ── Incense burner on table — original position ── */}
@@ -128,17 +203,7 @@ function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
         <pointLight position={[0, 0.14, 0]} intensity={0.4} color="#ff624d" distance={1.5} decay={1} />
       </group>
 
-      {/* ── Folded fabric — deeper inside, right side ── */}
-      <group position={[0, floorY + 0.015, centerZ - 1.4]}>
-        <mesh position={[0, 0.015, 0]} rotation={[0, 0.5, 0]}>
-          <boxGeometry args={[0.25, 0.03, 0.18]} />
-          <meshStandardMaterial color="#6B1A1A" roughness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.032, 0]} rotation={[0, 0.5, 0]}>
-          <boxGeometry args={[0.26, 0.004, 0.04]} />
-          <meshStandardMaterial color="#8B6914" roughness={0.85} />
-        </mesh>
-      </group>
+  
     </group>
   )
 }

@@ -30,7 +30,7 @@ export function HeroOverlay({ progress }: HeroOverlayProps) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingTop: isMobile ? 'clamp(32px, 6vh, 64px)' : 'clamp(48px, 8vh, 120px)',
+        paddingTop: isMobile ? 'clamp(44px, 8vh, 76px)' : 'clamp(72px, 12vh, 150px)',
         paddingLeft: isMobile ? '20px' : '0',
         paddingRight: isMobile ? '20px' : '0',
         pointerEvents: fade < 0.1 ? 'none' : 'auto',

@@ -9,13 +9,14 @@ const SCROLL_Z = -1.8
 const BASE_Y = 1.1
 const INTRO_Y = 2.75
 const MOBILE_INTRO_Y = 2.9
-const TOP_DOWN_Y = 7.0
-const MOBILE_TOP_DOWN_Y = 7.5
 const TOP_DOWN_Z = 1.5
 const DEFAULT_GROUND_TOP_Y = -1.35
-const CAMERA_TRANSITION_END = 0.18
+const CAMERA_TRANSITION_END = 0.28
 const INTRO_LOOK_AT_Y_BIAS = 0.30
 const GROUND_HEIGHT = 6
+const TOP_DOWN_HOLD_END = 0.16
+const DESKTOP_TOP_DOWN_Y = 5.95
+const MOBILE_TOP_DOWN_ENTRY_Y = 6.95
 
 function blendProjectionMatrices(
   target: THREE.Matrix4,
@@ -121,9 +122,10 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
       ? scrollLookAtTarget.current.copy(focus).add(scratchVecA.current.set(0, -0.15, 0.02))
       : scrollLookAt
 
-    // Swoop: top-down → front view → into the house
-    const swoopT = THREE.MathUtils.smoothstep(progress, 0.0, 0.10)
-    const topDownY = isMobile ? MOBILE_TOP_DOWN_Y : TOP_DOWN_Y
+    // Hold the orthographic top-down establishing shot longer before swooping forward.
+    const heldProgress = Math.max(0, progress - TOP_DOWN_HOLD_END)
+    const swoopT = THREE.MathUtils.smoothstep(heldProgress, 0.0, 0.12)
+    const topDownY = isMobile ? MOBILE_TOP_DOWN_ENTRY_Y : DESKTOP_TOP_DOWN_Y
     const frontY = isMobile ? MOBILE_INTRO_Y : INTRO_Y
     const frontZ = isMobile ? MOBILE_OUTSIDE_Z : OUTSIDE_Z
 

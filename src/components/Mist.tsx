@@ -2,11 +2,12 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export function GroundMist() {
+export function GroundMist({ active = true }: { active?: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const secondaryRef = useRef<THREE.Mesh>(null)
 
   useFrame((state) => {
+    if (!active) return
     if (!meshRef.current) return
     const t = state.clock.elapsedTime
     meshRef.current.position.y = -1.2 + Math.sin(t * 0.2) * 0.05
@@ -16,7 +17,7 @@ export function GroundMist() {
   })
 
   return (
-    <group>
+    <group visible={active}>
       <mesh ref={meshRef} position={[0, -1.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[36, 36, 1, 1]} />
         <meshBasicMaterial

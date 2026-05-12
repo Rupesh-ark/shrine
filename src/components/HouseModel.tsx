@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useGLTF, Environment } from '@react-three/drei'
+import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Box3, Vector3 } from 'three'
@@ -16,12 +16,19 @@ import { TableWithCushions, TABLE_OFFSET_Z } from './Table'
 import { SCROLL_LIFT, SCROLL_OFFSET_X, SCROLL_OFFSET_Z, TableScroll } from './TableScroll'
 import { InteriorDecor } from './InteriorDecor'
 import { createToonMaterial } from '../utils/toon'
+import { seededRandom } from '../utils/random'
 
 const CACHE_BUST = import.meta.env.VITE_BUILD_HASH ? `?v=${String(import.meta.env.VITE_BUILD_HASH)}` : ''
 const MODEL_URL = `/models/final_house/house.glb${CACHE_BUST}`
 const TARGET_HEIGHT = 3.8
 const GROUND_Y = -1.38
 const TARGET_FRONT_Z = 0.3
+const DOOR_OPEN_START_PROGRESS = 0.603
+const DOOR_OPEN_END_PROGRESS = 0.78
+const DOOR_RITUAL_CRACK_PROGRESS = 0.68
+const SEAL_POP_PROGRESS = 0.739
+const SEAL_POP_END_PROGRESS = 0.805
+const INTERIOR_VISIBLE_PROGRESS = 0.6
 
 const EXACT_COLORS: Record<string, MaterialRule> = {
   // Big stone lantern bases (tōrō)
@@ -152,17 +159,144 @@ function animateDoors(doors: { mesh: Mesh; closedX: number; openX: number }[], o
   }
 }
 
+function drawBloodSeal(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  t: number,
+  ritualProgress: number,
+  crackProgress: number,
+) {
+  const cx = w * 0.5
+  const cy = h * 0.46
+  const pulse = 0.5 + Math.sin(t * 8.5) * 0.5
+  const sealAlpha = THREE.MathUtils.clamp(0.18 + ritualProgress * 0.75 + pulse * ritualProgress * 0.25, 0, 1)
+  const sealSize = 74 + pulse * 6 + ritualProgress * 10
+
+  ctx.save()
+  ctx.translate(cx, cy)
+  ctx.rotate(-0.08 + Math.sin(t * 0.7) * 0.015)
+
+  const glow = ctx.createRadialGradient(0, 0, sealSize * 0.1, 0, 0, sealSize * 1.25)
+  glow.addColorStop(0, `rgba(190, 18, 18, ${String(0.2 * sealAlpha)})`)
+  glow.addColorStop(0.45, `rgba(130, 8, 8, ${String(0.16 * sealAlpha)})`)
+  glow.addColorStop(1, 'rgba(30, 0, 0, 0)')
+  ctx.fillStyle = glow
+  ctx.fillRect(-sealSize * 1.5, -sealSize * 1.5, sealSize * 3, sealSize * 3)
+
+  ctx.globalAlpha = sealAlpha
+  ctx.strokeStyle = '#a81212'
+  ctx.lineWidth = 5
+  ctx.strokeRect(-sealSize * 0.48, -sealSize * 0.48, sealSize * 0.96, sealSize * 0.96)
+
+  ctx.lineWidth = 2
+  ctx.strokeStyle = '#ff2a1f'
+  ctx.strokeRect(-sealSize * 0.36, -sealSize * 0.36, sealSize * 0.72, sealSize * 0.72)
+
+  ctx.beginPath()
+  ctx.arc(0, 0, sealSize * 0.26, 0, Math.PI * 2)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.moveTo(0, -sealSize * 0.34)
+  ctx.lineTo(0, sealSize * 0.34)
+  ctx.moveTo(-sealSize * 0.28, 0)
+  ctx.lineTo(sealSize * 0.28, 0)
+  ctx.stroke()
+
+  ctx.strokeStyle = '#3a0202'
+  ctx.lineWidth = 3
+  const dripAlpha = sealAlpha * (0.35 + ritualProgress * 0.5)
+  ctx.globalAlpha = dripAlpha
+  for (let i = 0; i < 6; i++) {
+    const x = -sealSize * 0.35 + i * sealSize * 0.14
+    const drip = 12 + Math.sin(t * 1.6 + i) * 5 + ritualProgress * 24
+    ctx.beginPath()
+    ctx.moveTo(x, sealSize * 0.46)
+    ctx.lineTo(x + Math.sin(i * 2.1) * 5, sealSize * 0.46 + drip)
+    ctx.stroke()
+  }
+
+  if (crackProgress > 0) {
+    ctx.globalAlpha = THREE.MathUtils.clamp(crackProgress * 1.1, 0, 1)
+    ctx.strokeStyle = '#ff4a32'
+    ctx.lineWidth = 2.5
+    const cracks = [
+      [[0, -sealSize * 0.48], [10, -24], [-5, -5], [16, 22], [6, sealSize * 0.48]],
+      [[-sealSize * 0.48, -8], [-28, -2], [-10, 6], [-sealSize * 0.15, 28]],
+      [[sealSize * 0.46, 12], [32, 8], [16, -6], [24, -26]],
+    ]
+    for (const crack of cracks) {
+      ctx.beginPath()
+      crack.forEach(([x, y], index) => {
+        const px = x * crackProgress
+        const py = y * crackProgress
+        if (index === 0) ctx.moveTo(px, py)
+        else ctx.lineTo(px, py)
+      })
+      ctx.stroke()
+    }
+  }
+
+  ctx.restore()
+  ctx.globalAlpha = 1
+}
+
+function createSealTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 512
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.premultiplyAlpha = false
+  texture.minFilter = THREE.LinearFilter
+  texture.magFilter = THREE.LinearFilter
+  texture.wrapS = THREE.ClampToEdgeWrapping
+  texture.wrapT = THREE.ClampToEdgeWrapping
+  return texture
+}
+
+function updateSealTexture(
+  texture: THREE.CanvasTexture,
+  t: number,
+  ritualProgress: number,
+  openProgress: number,
+) {
+  const canvas = texture.image as HTMLCanvasElement
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  const w = canvas.width
+  const h = canvas.height
+  const crackProgress = THREE.MathUtils.clamp(
+    (ritualProgress - ((DOOR_RITUAL_CRACK_PROGRESS - DOOR_OPEN_START_PROGRESS) / (DOOR_OPEN_END_PROGRESS - DOOR_OPEN_START_PROGRESS))) / 0.28,
+    0,
+    1,
+  )
+  const fadeOut = 1 - THREE.MathUtils.smoothstep(openProgress, 0.42, 0.82)
+
+  ctx.clearRect(0, 0, w, h)
+  ctx.globalAlpha = fadeOut
+  drawBloodSeal(ctx, w, h, t, ritualProgress, crackProgress)
+  ctx.globalAlpha = 1
+  texture.needsUpdate = true
+}
+
 function animateScreenParticles(
   particles: ScreenParticle[],
   t: number,
   canvas: HTMLCanvasElement,
   texture: THREE.CanvasTexture,
+  ritualProgress: number,
+  openProgress: number,
 ) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   const w = canvas.width
   const h = canvas.height
   const sway = Math.sin(t * 0.35) * 6
+  const pulse = Math.sin(t * 9) * 0.5 + 0.5
+  const bloodLift = ritualProgress * 0.16 + pulse * ritualProgress * 0.08
 
   // Dark warm base (slightly lifted so red can pop)
   ctx.fillStyle = '#1c1111'
@@ -176,6 +310,11 @@ function animateScreenParticles(
   grad.addColorStop(1, 'rgba(10, 2, 2, 0.4)')
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, w, h)
+
+  if (ritualProgress > 0) {
+    ctx.fillStyle = `rgba(135, 3, 3, ${String(bloodLift)})`
+    ctx.fillRect(0, 0, w, h)
+  }
 
   // Faint paper grain
   ctx.globalAlpha = 0.06
@@ -213,7 +352,7 @@ function animateScreenParticles(
     ctx.fillStyle = 'rgba(140, 16, 16, 0.25)'
     ctx.fillRect(sx - sw / 2 - 2, sy - sh, sw + 4, sh)
 
-    ctx.fillStyle = 'rgba(160, 22, 22, 0.9)'
+    ctx.fillStyle = `rgba(185, 18, 18, ${String(0.82 + ritualProgress * 0.18)})`
     ctx.fillRect(sx - sw / 2, sy - sh, sw, sh)
 
     // Joint rings
@@ -272,7 +411,7 @@ function animateScreenParticles(
 
     const fadeIn = Math.min(1, p.life / 15)
     const fadeOut = Math.min(1, (p.maxLife - p.life) / 15)
-    const alpha = fadeIn * fadeOut
+    const alpha = fadeIn * fadeOut * (1 + ritualProgress * 0.45)
 
     const angle = (p.life * 0.08 + p.x * 0.01) % (Math.PI * 2)
     ctx.save()
@@ -296,10 +435,20 @@ function animateScreenParticles(
     ctx.restore()
   }
 
+  if (openProgress > 0.65) {
+    ctx.fillStyle = `rgba(12, 3, 3, ${String((openProgress - 0.65) * 0.55)})`
+    ctx.fillRect(0, 0, w, h)
+  }
+
   texture.needsUpdate = true
 }
 
-export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: HouseModelProps) {
+export function HouseModel({
+  onBounds,
+  onScrollFocus,
+  progress = 0,
+  onReady,
+}: HouseModelProps) {
   const { scene: loadedScene } = useGLTF(MODEL_URL, '/draco/') as GLTF
   const scene = useMemo(() => loadedScene.clone(true), [loadedScene])
   const groupRef = useRef<Group>(null)
@@ -318,7 +467,34 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
   const screenCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const screenTextureRef = useRef<THREE.CanvasTexture | null>(null)
   const screenParticlesRef = useRef<ScreenParticle[]>([])
+  const sealTextureRef = useRef<THREE.CanvasTexture | null>(null)
+  const sealMeshRef = useRef<THREE.Mesh>(null)
+  const sealMaterialRef = useRef<THREE.MeshBasicMaterial>(null)
+  const sealBurstRef = useRef<THREE.Points>(null)
+  const sealBurstMaterialRef = useRef<THREE.PointsMaterial>(null)
+  const [sealPlane, setSealPlane] = useState<{
+    position: [number, number, number]
+    width: number
+    height: number
+    texture: THREE.CanvasTexture
+  } | null>(null)
+  const sealBurstGeometry = useMemo(() => {
+    const count = 56
+    const rng = seededRandom(739)
+    const positions = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2
+      const jitter = 0.4 + rng() * 0.6
+      positions[i * 3] = Math.cos(angle) * jitter
+      positions[i * 3 + 1] = Math.sin(angle) * jitter
+      positions[i * 3 + 2] = (rng() - 0.5) * 0.03
+    }
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    return geo
+  }, [])
   const lastScreenUpdateRef = useRef(0)
+  const doorAnimationCompleteRef = useRef(false)
 
   useEffect(() => {
     onReady?.()
@@ -409,6 +585,33 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
     })
 
     if (screenMeshes.length > 0) {
+      const screenBounds = new Box3()
+      let hasScreenBounds = false
+      for (const mesh of screenMeshes) {
+        mesh.updateWorldMatrix(true, false)
+        const meshBounds = new Box3().setFromObject(mesh)
+        if (!hasScreenBounds) {
+          screenBounds.copy(meshBounds)
+          hasScreenBounds = true
+        } else {
+          screenBounds.union(meshBounds)
+        }
+      }
+
+      let sealPlaneData: { position: [number, number, number]; width: number; height: number } | null = null
+      if (hasScreenBounds && groupRef.current) {
+        const screenCenter = new Vector3()
+        const screenSize = new Vector3()
+        screenBounds.getCenter(screenCenter)
+        screenBounds.getSize(screenSize)
+        groupRef.current.worldToLocal(screenCenter)
+        sealPlaneData = {
+          position: [screenCenter.x, screenCenter.y, screenCenter.z + 0.012],
+          width: Math.max(0.18, screenSize.x * 0.42),
+          height: Math.max(0.18, screenSize.y * 0.42),
+        }
+      }
+
       const canvas = document.createElement('canvas')
       canvas.width = 256
       canvas.height = 512
@@ -419,6 +622,13 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
       texture.premultiplyAlpha = false
       ownedTextures.push(texture)
       screenTextureRef.current = texture
+
+      const sealTexture = createSealTexture()
+      ownedTextures.push(sealTexture)
+      sealTextureRef.current = sealTexture
+      if (sealPlaneData) {
+        setSealPlane({ ...sealPlaneData, texture: sealTexture })
+      }
 
       const particles: typeof screenParticlesRef.current = []
       for (let i = 0; i < 40; i++) {
@@ -584,6 +794,8 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
       scene.scale.setScalar(1)
       screenCanvasRef.current = null
       screenTextureRef.current = null
+      sealTextureRef.current = null
+      setSealPlane(null)
       screenParticlesRef.current = []
       doorRefs.current = []
       ownedMaterials.forEach((material) => {
@@ -596,25 +808,67 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
   }, [onBounds, onScrollFocus, scene])
 
   useFrame((state) => {
-    const openProgress = Math.min(1, Math.max(0, progress / 0.4))
-    animateDoors(doorRefs.current, openProgress)
+    const openProgress = THREE.MathUtils.clamp(
+      (progress - DOOR_OPEN_START_PROGRESS) / (DOOR_OPEN_END_PROGRESS - DOOR_OPEN_START_PROGRESS),
+      0,
+      1,
+    )
+    if (openProgress < 1) {
+      doorAnimationCompleteRef.current = false
+    }
+    if (!doorAnimationCompleteRef.current) {
+      animateDoors(doorRefs.current, openProgress)
+      if (openProgress >= 1) {
+        doorAnimationCompleteRef.current = doorRefs.current.every(
+          (door) => Math.abs(door.mesh.position.x - door.openX) < 0.001,
+        )
+      }
+    }
 
     const canvas = screenCanvasRef.current
     const texture = screenTextureRef.current
     const particles = screenParticlesRef.current
-    if (!canvas || !texture || particles.length === 0) return
+    const sealTexture = sealTextureRef.current
+    if (!canvas || !texture || particles.length === 0 || progress >= 0.82) return
 
     // Throttle 2D canvas animation to ~15 FPS to reduce main-thread pressure
     const now = performance.now()
     if (now - lastScreenUpdateRef.current < 67) return
     lastScreenUpdateRef.current = now
 
-    animateScreenParticles(particles, state.clock.elapsedTime, canvas, texture)
+    animateScreenParticles(particles, state.clock.elapsedTime, canvas, texture, openProgress, openProgress)
+    if (sealTexture) {
+      updateSealTexture(sealTexture, state.clock.elapsedTime, openProgress, openProgress)
+    }
+
+    const popProgress = THREE.MathUtils.clamp(
+      (progress - SEAL_POP_PROGRESS) / (SEAL_POP_END_PROGRESS - SEAL_POP_PROGRESS),
+      0,
+      1,
+    )
+    const sealVisible = progress < SEAL_POP_END_PROGRESS
+    if (sealMeshRef.current) {
+      sealMeshRef.current.visible = sealVisible
+      const popScale = 1 + popProgress * 0.55
+      sealMeshRef.current.scale.setScalar(popScale)
+    }
+    if (sealMaterialRef.current) {
+      sealMaterialRef.current.opacity = sealVisible ? 1 - THREE.MathUtils.smoothstep(popProgress, 0.2, 1) : 0
+    }
+    if (sealBurstRef.current) {
+      sealBurstRef.current.visible = popProgress > 0 && popProgress < 1
+      sealBurstRef.current.scale.setScalar(0.06 + popProgress * 0.22)
+    }
+    if (sealBurstMaterialRef.current) {
+      sealBurstMaterialRef.current.opacity = popProgress > 0 && popProgress < 1 ? 1 - popProgress : 0
+      sealBurstMaterialRef.current.size = 0.012 + popProgress * 0.014
+    }
   })
+
+  const showInterior = progress >= INTERIOR_VISIBLE_PROGRESS
 
   return (
     <group ref={groupRef} rotation={[0, 0, 0]}>
-      <Environment files="/env/dikhololo_night_1k.hdr" environmentIntensity={0.26} />
       <primitive object={scene} />
       {lanternLights.map((light, index) => (
         <pointLight
@@ -634,9 +888,37 @@ export function HouseModel({ onBounds, onScrollFocus, progress = 0, onReady }: H
         decay={2}
       />
       {oniPositions.length > 0 && <RedSpirits positions={oniPositions} />}
-      <TableWithCushions floorY={tableFloorY} centerZ={tableCenterZ} />
-      <TableScroll floorY={tableFloorY} tableZ={tableCenterZ - TABLE_OFFSET_Z} />
-      <InteriorDecor floorY={tableFloorY} centerZ={tableCenterZ} />
+      {sealPlane && (
+        <group position={sealPlane.position}>
+          <mesh ref={sealMeshRef}>
+            <planeGeometry args={[sealPlane.width, sealPlane.height]} />
+            <meshBasicMaterial
+              ref={sealMaterialRef}
+              map={sealPlane.texture}
+              transparent
+              opacity={1}
+              depthWrite={false}
+              toneMapped={false}
+            />
+          </mesh>
+          <points ref={sealBurstRef} geometry={sealBurstGeometry} visible={false}>
+            <pointsMaterial
+              ref={sealBurstMaterialRef}
+              color="#ff2a22"
+              size={0.012}
+              transparent
+              opacity={0}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+            />
+          </points>
+        </group>
+      )}
+      <group visible={showInterior}>
+        <TableWithCushions floorY={tableFloorY} centerZ={tableCenterZ} />
+        <TableScroll floorY={tableFloorY} tableZ={tableCenterZ - TABLE_OFFSET_Z} progress={progress} />
+        <InteriorDecor floorY={tableFloorY} centerZ={tableCenterZ} />
+      </group>
     </group>
   )
 }

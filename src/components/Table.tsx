@@ -43,5 +43,3 @@ export function TableWithCushions({ floorY, centerZ }: TableWithCushionsProps) {
     </group>
   )
 }
-
-useGLTF.preload(TABLE_URL, '/draco/')

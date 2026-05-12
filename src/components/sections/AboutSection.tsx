@@ -10,11 +10,11 @@ export const AboutSection = memo(function AboutSection() {
       display: 'flex', flexDirection: 'column',
       justifyContent: 'center', scrollSnapAlign: 'start',
       padding: '32px clamp(16px, 5vw, 40px)',
-    }}>
-      <SectionHeader kanji="略歴" english="About" />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', maxWidth: '520px', margin: '0 auto' }}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{
+	    }}>
+	      <SectionHeader kanji="略歴" english="About" />
+	      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', maxWidth: '520px', margin: '0 auto' }}>
+	        <div style={{ position: 'relative', flexShrink: 0 }}>
+	          <div style={{
             position: 'absolute', top: '-6px', left: '-6px',
             width: '18px', height: '18px',
             borderLeft: `2px solid ${CRIMSON}`, borderTop: `2px solid ${CRIMSON}`,
@@ -40,10 +40,10 @@ export const AboutSection = memo(function AboutSection() {
           }} />
 
           <img
-            src="/images/Rupesh_Pandey.webp"
+            src="/images/Rupesh_Pandey-480.webp"
             alt="Rupesh Pandey"
-            width={700}
-            height={686}
+            width={480}
+            height={470}
             loading="lazy"
             decoding="async"
             style={{
@@ -82,6 +82,6 @@ export const AboutSection = memo(function AboutSection() {
           </p>
         </div>
       </div>
-    </section>
+	    </section>
   )
 })

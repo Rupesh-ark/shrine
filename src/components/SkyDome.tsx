@@ -204,7 +204,7 @@ interface ShootingState {
   nextSpawn: number
 }
 
-export function SkyDome({ progress }: SkyDomeProps) {
+export function SkyDome({ progress, active = true }: SkyDomeProps) {
   const { gl } = useThree()
 
   /* Nebula dome */
@@ -268,12 +268,16 @@ export function SkyDome({ progress }: SkyDomeProps) {
     const nMat = nebulaMatRef.current
     const sMat = starMatRef.current
     if (nMat) {
-      ;(nMat.uniforms.uTime.value as number) += delta
+      if (active) {
+        ;(nMat.uniforms.uTime.value as number) += delta
+      }
       nMat.uniforms.uOpacity.value = reveal
     }
-    if (sMat) {
+    if (sMat && active) {
       ;(sMat.uniforms.uTime.value as number) += delta
     }
+
+    if (!active) return
 
     const s = shootingState.current
     s.timer += delta

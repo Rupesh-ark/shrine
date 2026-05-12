@@ -6,7 +6,7 @@ import { seededRandom } from '../utils/random'
 const PARTICLE_COUNT = 180
 const AREA_SIZE = 18
 
-export function FallingParticles() {
+export function FallingParticles({ active = true }: { active?: boolean }) {
   const meshRef = useRef<THREE.Points>(null)
 
   const { positions, speeds, phases } = useMemo(() => {
@@ -33,6 +33,7 @@ export function FallingParticles() {
   }, [positions])
 
   useFrame((state) => {
+    if (!active) return
     if (!meshRef.current) return
     const posAttr = meshRef.current.geometry.attributes.position
     const posArray = posAttr.array as Float32Array
@@ -56,7 +57,7 @@ export function FallingParticles() {
   })
 
   return (
-    <points ref={meshRef} geometry={geometry}>
+    <points ref={meshRef} geometry={geometry} visible={active}>
       <pointsMaterial
         color="#F4DDCD"
         size={0.035}

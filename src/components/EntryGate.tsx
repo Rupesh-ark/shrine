@@ -1,4 +1,5 @@
 import { memo, useState, useEffect, useRef } from 'react'
+import type { CSSProperties } from 'react'
 
 interface EntryGateProps {
   onEnter: () => void
@@ -18,6 +19,7 @@ const BLOOD_SHEEN = '#F8C7B8'
 const DROP_BASE_GRADIENT = 'entry-gate-drop-base'
 const DROP_HIGHLIGHT_GRADIENT = 'entry-gate-drop-highlight'
 const DROP_SHADOW_GRADIENT = 'entry-gate-drop-shadow'
+type OrbitGlyphStyle = CSSProperties & { '--orbit-angle': string }
 
 function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
   const [phase, setPhase] = useState<Phase>('appear')
@@ -217,19 +219,66 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         pointerEvents: 'none',
       }}>
         {/* Red 3D Sphere */}
-        <div style={{
-          position: 'relative',
-          width: '72px',
-          height: '108px',
-          filter: 'drop-shadow(0 0 18px rgba(139,26,26,0.16))',
-        }}>
+	        <div style={{
+	          position: 'relative',
+	          width: '152px',
+	          height: '152px',
+	          filter: 'drop-shadow(0 0 18px rgba(139,26,26,0.16))',
+	        }}>
+	          {(isIdle || isWaiting) && (
+	            <div
+              aria-hidden
+	              style={{
+	                position: 'absolute',
+	                left: '50%',
+	                top: '50%',
+	                width: '176px',
+	                height: '176px',
+	                transform: 'translate(-50%, -50%)',
+	                transformOrigin: '50% 50%',
+	                pointerEvents: 'none',
+	                zIndex: 0,
+	              }}
+	            >
+	              {Array.from({ length: 18 }, (_, i) => {
+	                const angle = i * 20
+	                return (
+	                  <div
+	                    key={i}
+	                    style={{
+	                      position: 'absolute',
+	                      left: '50%',
+	                      top: '50%',
+	                      '--orbit-angle': `${String(angle)}deg`,
+	                      transform: `translate(-50%, -50%) rotate(${String(angle)}deg) translateY(-78px)`,
+	                      animation: 'menaceGlyphOrbit 4.8s linear infinite',
+	                      fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
+	                      fontSize: '24px',
+	                      fontWeight: 900,
+                      letterSpacing: 0,
+                      color: '#a00d0d',
+                      WebkitTextStroke: '1px rgba(42,5,5,0.55)',
+	                      textShadow: '0 0 12px rgba(139,26,26,0.5), 0 2px 0 rgba(42,5,5,0.42)',
+	                      opacity: 0.78,
+		                    } as OrbitGlyphStyle}
+                  >
+                    ゴ
+                  </div>
+                )
+              })}
+            </div>
+          )}
           {/* Ambient glow */}
-          <div style={{
-            position: 'absolute',
-            inset: '-28px -18px -14px',
-            borderRadius: '50%',
-            background: `radial-gradient(circle at 50% 42%, ${LANTERN_RED}24 0%, transparent 70%)`,
-            animation: isIdle ? 'dropGlow 4.5s ease-in-out infinite' : 'none',
+	          <div style={{
+	            position: 'absolute',
+	            left: '50%',
+	            top: '50%',
+	            width: '118px',
+	            height: '118px',
+	            transform: 'translate(-50%, -50%)',
+	            borderRadius: '50%',
+	            background: `radial-gradient(circle at 50% 42%, ${LANTERN_RED}24 0%, transparent 70%)`,
+	            animation: isIdle ? 'dropGlow 4.5s ease-in-out infinite' : 'none',
           }} />
 
           <svg
@@ -237,16 +286,19 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
             width="76"
             height="102"
             aria-hidden
-            style={{
-              position: 'relative',
-              display: 'block',
-              overflow: 'visible',
-              transformOrigin: '50% 68%',
-              animation: isIdle ? 'dropSquish 5s ease-in-out infinite' : 'none',
-              transform: (isIdle || isWaiting) ? 'scale(1)' : 'scale(0)',
-              transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}
-          >
+	              style={{
+	              position: 'absolute',
+	              left: '50%',
+	              top: '50%',
+	              display: 'block',
+	              overflow: 'visible',
+	              zIndex: 1,
+	              transformOrigin: '50% 50%',
+	              animation: isIdle ? 'dropSquish 5s ease-in-out infinite' : 'none',
+	              transform: (isIdle || isWaiting) ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -50%) scale(0)',
+	              transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+	            }}
+	          >
             <defs>
               <radialGradient id={DROP_BASE_GRADIENT} cx="34%" cy="26%" r="76%">
                 <stop offset="0%" stopColor={BLOOD_SHEEN} />
@@ -282,8 +334,8 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
         </div>
 
         {/* Text */}
-        <div style={{
-          marginTop: '32px',
+	        <div style={{
+	          marginTop: '12px',
           textAlign: 'center',
           display: 'flex',
           flexDirection: 'column',
@@ -350,13 +402,21 @@ function EntryGateComponent({ onEnter, ready = false }: EntryGateProps) {
           0%, 100% { transform: scale(1); opacity: 0.55; }
           50% { transform: scale(1.08); opacity: 1; }
         }
-        @keyframes dropSquish {
-          0%, 100% { transform: scale(1) rotate(0deg); }
-          25% { transform: scale(1.02, 0.98) rotate(-1deg); }
-          50% { transform: scale(0.98, 1.04) rotate(1deg); }
-          75% { transform: scale(1.03, 0.99) rotate(-0.5deg); }
-        }
-      `}</style>
+	        @keyframes dropSquish {
+	          0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+	          25% { transform: translate(-50%, -50%) scale(1.02, 0.98) rotate(-1deg); }
+	          50% { transform: translate(-50%, -50%) scale(0.98, 1.04) rotate(1deg); }
+	          75% { transform: translate(-50%, -50%) scale(1.03, 0.99) rotate(-0.5deg); }
+	        }
+	        @keyframes menaceGlyphOrbit {
+	          from {
+	            transform: translate(-50%, -50%) rotate(var(--orbit-angle)) translateY(-78px);
+	          }
+	          to {
+	            transform: translate(-50%, -50%) rotate(calc(var(--orbit-angle) + 360deg)) translateY(-78px);
+	          }
+	        }
+	      `}</style>
     </div>
   )
 }

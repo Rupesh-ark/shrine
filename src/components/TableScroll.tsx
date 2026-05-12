@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { TableScrollProps } from '../types'
 
@@ -104,8 +105,10 @@ function createParchmentTex(): THREE.CanvasTexture {
   return tex
 }
 
-export function TableScroll({ floorY, tableZ }: TableScrollProps) {
+export function TableScroll({ floorY, tableZ, progress = 0 }: TableScrollProps) {
   const parchmentTex = useMemo(() => createParchmentTex(), [])
+  const groupRef = useRef<THREE.Group>(null)
+  const glowRef = useRef<THREE.MeshBasicMaterial>(null)
 
   const tableSurfaceY = floorY + 0.172
   const scrollW = 0.18
@@ -115,9 +118,24 @@ export function TableScroll({ floorY, tableZ }: TableScrollProps) {
   const rodLength = scrollW + 0.03
   const rodY = 0.01
   const rodInset = scrollD * 0.52
+  const awaken = THREE.MathUtils.smoothstep(progress, 0.72, 0.88)
+
+  useFrame((state) => {
+    if (!groupRef.current) return
+    const pulse = Math.sin(state.clock.elapsedTime * 6.8) * 0.5 + 0.5
+    const tremor = Math.sin(state.clock.elapsedTime * 18) * awaken * 0.0018
+    groupRef.current.position.y = tableSurfaceY + SCROLL_LIFT + awaken * 0.026 + pulse * awaken * 0.008
+    groupRef.current.position.x = SCROLL_OFFSET_X + tremor
+    groupRef.current.rotation.x = 0.01 + Math.sin(state.clock.elapsedTime * 5.4) * awaken * 0.035
+    groupRef.current.rotation.z = -0.025 + Math.sin(state.clock.elapsedTime * 4.2) * awaken * 0.055
+    if (glowRef.current) {
+      glowRef.current.opacity = awaken * (0.2 + pulse * 0.32)
+    }
+  })
 
   return (
     <group
+      ref={groupRef}
       position={[SCROLL_OFFSET_X, tableSurfaceY + SCROLL_LIFT, tableZ + SCROLL_OFFSET_Z]}
       rotation={[0.01, -0.015, -0.025]}
     >
@@ -131,6 +149,17 @@ export function TableScroll({ floorY, tableZ }: TableScrollProps) {
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[scrollW, paperThickness, scrollD]} />
         <meshStandardMaterial map={parchmentTex} roughness={0.92} />
+      </mesh>
+      <mesh position={[0, paperThickness * 0.5 + 0.003, 0]}>
+        <boxGeometry args={[scrollW * 1.12, 0.002, scrollD * 1.12]} />
+        <meshBasicMaterial
+          ref={glowRef}
+          color="#C42020"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </mesh>
 
       {/* End wraps */}

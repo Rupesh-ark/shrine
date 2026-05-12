@@ -54,6 +54,7 @@ export interface TableWithCushionsProps {
 export interface TableScrollProps {
   floorY: number
   tableZ: number
+  progress?: number
 }
 
 export interface FlameData {
@@ -69,6 +70,7 @@ export interface RedSpiritsProps {
 
 export interface SkyDomeProps {
   progress: number
+  active?: boolean
 }
 
 export interface SceneProps {
