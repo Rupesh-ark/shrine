@@ -15,7 +15,7 @@ const ScrollOverlay = lazy(() =>
 function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserRef: React.RefObject<AnalyserNode | null>, muted: boolean) {
   if (analyserRef.current) return
 
-  const audio = new Audio('/music/errrie.mp3')
+  const audio = new Audio('/music/shadows_in_static.mp3')
   audio.loop = true
   audio.volume = 0.45
   audio.preload = 'none'
