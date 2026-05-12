@@ -17,6 +17,7 @@ function getCamera(isMobile: boolean) {
 function CanvasScene({ onHouseReady, entered }: SceneProps) {
   const [dpr, setDpr] = useState(1.5)
   const [orbitEnabled, setOrbitEnabled] = useState(false)
+  const [postEnabled, setPostEnabled] = useState(true)
   const isMobile = useIsMobile()
   const quality = useQuality()
   const camera = getCamera(isMobile)
@@ -30,6 +31,9 @@ function CanvasScene({ onHouseReady, entered }: SceneProps) {
           ;(window as unknown as Record<string, unknown>).__debugOrbit = next
           return next
         })
+      }
+      if (e.shiftKey && e.key === 'P') {
+        setPostEnabled(prev => !prev)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -66,7 +70,7 @@ function CanvasScene({ onHouseReady, entered }: SceneProps) {
       <Preload all />
       {orbitEnabled && <OrbitControls />}
       <Scene onHouseReady={onHouseReady} entered={entered} quality={quality} />
-      {quality.bloom && <PostProcessing bloomIntensity={quality.bloomIntensity} />}
+      {quality.bloom && postEnabled && <PostProcessing bloomIntensity={quality.bloomIntensity} />}
     </Canvas>
   )
 }
