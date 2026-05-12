@@ -27,7 +27,6 @@ const DOOR_OPEN_END_PROGRESS = 0.78
 const DOOR_RITUAL_CRACK_PROGRESS = 0.68
 const SEAL_POP_PROGRESS = 0.739
 const SEAL_POP_END_PROGRESS = 0.805
-const INTERIOR_VISIBLE_PROGRESS = 0.6
 
 const EXACT_COLORS: Record<string, MaterialRule> = {
   // Big stone lantern bases (tōrō)
@@ -869,7 +868,7 @@ export function HouseModel({
     }
 
     if (interiorGroupRef.current) {
-      interiorGroupRef.current.visible = progress >= INTERIOR_VISIBLE_PROGRESS
+      interiorGroupRef.current.visible = true
     }
   })
 
