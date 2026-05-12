@@ -21,7 +21,6 @@ import { seededRandom } from '../utils/random'
 const CACHE_BUST = import.meta.env.VITE_BUILD_HASH ? `?v=${String(import.meta.env.VITE_BUILD_HASH)}` : ''
 const MODEL_URL = `/models/final_house/house.glb${CACHE_BUST}`
 const TARGET_HEIGHT = 3.8
-const GROUND_Y = -1.38
 const TARGET_FRONT_Z = 0.3
 const DOOR_OPEN_START_PROGRESS = 0.603
 const DOOR_OPEN_END_PROGRESS = 0.78
@@ -660,7 +659,7 @@ export function HouseModel({
 
     if (groupRef.current) {
       const depth = box.max.z - box.min.z
-      groupRef.current.position.set(0, GROUND_Y, TARGET_FRONT_Z - depth / 2)
+      groupRef.current.position.set(0, 0, TARGET_FRONT_Z - depth / 2)
       groupRef.current.updateWorldMatrix(true, true)
 
       const worldBounds = new Box3().setFromObject(groupRef.current)
@@ -781,7 +780,7 @@ export function HouseModel({
       groupRef.current.worldToLocal(centerPos)
       setTableCenterZ(centerPos.z)
 
-      const resolvedFloorY = tatamiY ?? GROUND_Y
+      const resolvedFloorY = tatamiY ?? 0
       const scrollLocal = new Vector3(
         SCROLL_OFFSET_X,
         resolvedFloorY + 0.172 + SCROLL_LIFT,
@@ -890,7 +889,7 @@ export function HouseModel({
       {maxPointLights > 0 && (
         <pointLight
           position={[0, 2.8, 0]}
-          intensity={1.35}
+          intensity={0.55}
           color="#FFD7A3"
           distance={8}
           decay={2}

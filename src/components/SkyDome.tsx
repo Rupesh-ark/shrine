@@ -1,13 +1,14 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { seededRandom } from '../utils/random'
-import type { QualityTier } from '../hooks/useIsMobile'
 
-/* ── Nebula background shader ── */
 
-const NEBULA_VERTEX = `
+/* ── Sky gradient shader ── */
+
+const SKY_VERTEX = `
   varying vec2 vUv;
   void main() {
     vUv = uv;
@@ -15,358 +16,258 @@ const NEBULA_VERTEX = `
   }
 `
 
-const NEBULA_FRAGMENT = `
-  uniform float uTime;
+const SKY_FRAGMENT = `
   uniform float uOpacity;
   varying vec2 vUv;
 
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-  }
-
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(
-      mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
-      f.y
-    );
-  }
-
-  float fbm(vec2 p) {
-    float v = 0.0;
-    float a = 0.5;
-    for (int i = 0; i < 4; i++) {
-      v += a * noise(p);
-      p *= 2.0;
-      a *= 0.5;
-    }
-    return v;
-  }
-
   void main() {
-    vec2 uv = vUv;
-    float t = uTime * 0.008;
+    vec3 zenith = vec3(0.06, 0.05, 0.14);
+    vec3 midtone = vec3(0.04, 0.035, 0.10);
+    vec3 horizon = vec3(0.015, 0.012, 0.04);
 
-    float equator = smoothstep(0.35, 0.0, abs(uv.y - 0.5));
-
-    float n1 = fbm(uv * 3.0 + vec2(t, t * 0.7));
-    float n2 = fbm(uv * 5.0 - vec2(t * 1.1, t * 0.6) + n1);
-
-    vec3 baseSpace = vec3(0.008, 0.006, 0.006);
-    vec3 cloud1 = vec3(0.02, 0.015, 0.015);
-    vec3 cloud2 = vec3(0.015, 0.012, 0.012);
-    vec3 band = vec3(0.018, 0.014, 0.014);
-
-    vec3 col = baseSpace;
-    col += cloud1 * n1 * 0.15;
-    col += cloud2 * n2 * 0.12;
-    col += band * equator * (n1 * n2) * 0.4;
+    float t = clamp(vUv.y * 1.8, 0.0, 1.0);
+    vec3 col = mix(zenith, midtone, smoothstep(0.0, 0.5, t));
+    col = mix(col, horizon, smoothstep(0.5, 1.0, t));
 
     gl_FragColor = vec4(col, uOpacity);
   }
 `
 
-/* ── Star field shaders ── */
+/* ── Moon glow texture ── */
 
-const STAR_RADIUS = 55
+function createMoonGlowTexture(): THREE.CanvasTexture {
+  const size = 256
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2D context unavailable')
+
+  const cx = size / 2
+  const cy = size / 2
+
+  const grad = ctx.createRadialGradient(cx, cy, size * 0.2, cx, cy, size / 2)
+  grad.addColorStop(0, 'rgba(190, 45, 35, 0.28)')
+  grad.addColorStop(0.35, 'rgba(145, 25, 20, 0.10)')
+  grad.addColorStop(0.7, 'rgba(70, 12, 10, 0.03)')
+  grad.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, size, size)
+
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.colorSpace = THREE.SRGBColorSpace
+  tex.premultiplyAlpha = false
+  tex.minFilter = THREE.LinearFilter
+  tex.magFilter = THREE.LinearFilter
+  return tex
+}
+
+let _moonGlowTex: THREE.CanvasTexture | null = null
+
+function getMoonGlowTexture() {
+  _moonGlowTex ??= createMoonGlowTexture()
+  return _moonGlowTex
+}
+
+/* ── Vignette alpha mask ── */
+
+let _vignetteTex: THREE.CanvasTexture | null = null
+
+function getVignetteTexture() {
+  if (_vignetteTex) return _vignetteTex
+  const size = 256
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const cx = size / 2
+  const cy = size / 2
+  const grad = ctx.createRadialGradient(cx, cy, size * 0.32, cx, cy, size * 0.48)
+  grad.addColorStop(0, 'rgba(255,255,255,1)')
+  grad.addColorStop(0.8, 'rgba(255,255,255,1)')
+  grad.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, size, size)
+  _vignetteTex = new THREE.CanvasTexture(canvas)
+  _vignetteTex.minFilter = THREE.LinearFilter
+  _vignetteTex.magFilter = THREE.LinearFilter
+  return _vignetteTex
+}
+
+/* ── Star shaders ── */
 
 const STAR_VERTEX = `
   uniform float uTime;
   uniform float uPixelRatio;
-
   attribute float aSize;
   attribute float aPhase;
-  attribute float aTwinkleSpeed;
+  attribute float aSpeed;
   attribute vec3 aColor;
-
   varying vec3 vColor;
   varying float vAlpha;
-
   void main() {
     vColor = aColor;
-
-    float t = uTime * aTwinkleSpeed + aPhase;
-    float wave = sin(t) * 0.5 + 0.5;
-    float flash = pow(wave, 12.0) * 1.8;
-    float base = 0.2 + wave * 0.35;
-    vAlpha = base + flash;
-
+    float twinkle = 0.45 + sin(uTime * aSpeed + aPhase) * 0.22;
+    vAlpha = twinkle;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
-
-    float dist = length(mvPosition.xyz);
-    gl_PointSize = aSize * uPixelRatio * (500.0 / dist) * (0.6 + vAlpha * 0.4);
+    gl_PointSize = aSize * uPixelRatio * (180.0 / -mvPosition.z);
   }
 `
 
-const STAR_FRAGMENT_SIMPLE = `
+const STAR_FRAGMENT = `
   varying vec3 vColor;
   varying float vAlpha;
-
   void main() {
     float d = length(gl_PointCoord * 2.0 - 1.0);
-    float core = exp(-d * d * 12.0);
-    float alpha = core * vAlpha;
+    float glow = exp(-d * d * 4.5);
+    float alpha = glow * vAlpha;
     if (alpha < 0.02) discard;
-    vec3 finalColor = mix(vColor, vec3(1.0), core * 0.6);
-    gl_FragColor = vec4(finalColor, alpha);
+    gl_FragColor = vec4(vColor, alpha);
   }
 `
 
-const STAR_FRAGMENT_FULL = `
-  varying vec3 vColor;
-  varying float vAlpha;
+/* ── Star data generation ── */
 
-  void main() {
-    vec2 uv = gl_PointCoord * 2.0 - 1.0;
-    float d = length(uv);
+const STAR_COUNT = 180
+const STAR_RADIUS = 27
+const MOON_DIST = 20
+const MOON_THETA = 1.38
+const MOON_PHI = 4.85
 
-    float rayX = exp(-abs(uv.x) * 35.0) * exp(-abs(uv.y) * 1.2);
-    float rayY = exp(-abs(uv.y) * 35.0) * exp(-abs(uv.x) * 1.2);
-    float rays = (rayX + rayY) * 0.85;
+function generateStarData() {
+  const rng = seededRandom(99)
+  const phiSpread = 2.0
 
-    float core = exp(-d * d * 18.0);
-    float halo = exp(-d * d * 4.0) * 0.35;
+  const positions = new Float32Array(STAR_COUNT * 3)
+  const colors = new Float32Array(STAR_COUNT * 3)
+  const sizes = new Float32Array(STAR_COUNT)
+  const phases = new Float32Array(STAR_COUNT)
+  const speeds = new Float32Array(STAR_COUNT)
 
-    float alpha = (rays + core + halo) * vAlpha;
-    alpha *= smoothstep(1.0, 0.25, d);
+  for (let i = 0; i < STAR_COUNT; i++) {
+    let theta = MOON_THETA + (rng() - 0.5) * 0.35
+    if (theta > 1.48) theta = 1.44 + rng() * 0.04
+    if (theta < 0.8) theta = 0.8 + rng() * 0.04
+    const phi = MOON_PHI + (rng() - 0.5) * phiSpread
 
-    if (alpha < 0.02) discard;
+    positions[i * 3] = STAR_RADIUS * Math.sin(theta) * Math.cos(phi)
+    positions[i * 3 + 1] = STAR_RADIUS * Math.cos(theta)
+    positions[i * 3 + 2] = STAR_RADIUS * Math.sin(theta) * Math.sin(phi)
 
-    vec3 finalColor = mix(vColor, vec3(1.0), core * 0.8);
-    gl_FragColor = vec4(finalColor, alpha);
-  }
-`
-
-function generateStarData(count: number) {
-  const rng = seededRandom(42)
-
-  const positions = new Float32Array(count * 3)
-  const colors = new Float32Array(count * 3)
-  const sizes = new Float32Array(count)
-  const phases = new Float32Array(count)
-  const twinkleSpeeds = new Float32Array(count)
-
-  // Spectral colour weights (same as original SkyDome)
-  const spectra = [
-    { r: 0.69, g: 0.77, b: 1.00, w: 0.06 }, // O  – blue
-    { r: 0.78, g: 0.85, b: 1.00, w: 0.14 }, // B  – blue-white
-    { r: 0.88, g: 0.92, b: 1.00, w: 0.20 }, // A  – white
-    { r: 1.00, g: 0.98, b: 0.94, w: 0.28 }, // F  – yellow-white
-    { r: 1.00, g: 0.90, b: 0.75, w: 0.18 }, // G  – yellow
-    { r: 1.00, g: 0.78, b: 0.63, w: 0.10 }, // K  – orange
-    { r: 1.00, g: 0.67, b: 0.59, w: 0.04 }, // M  – red
-  ]
-  const totalW = spectra.reduce((s, c) => s + c.w, 0)
-
-  const pickSpectrum = () => {
-    let roll = rng() * totalW
-    for (const s of spectra) {
-      roll -= s.w
-      if (roll <= 0) return s
-    }
-    return spectra[3]
-  }
-
-  for (let i = 0; i < count; i++) {
-    // Sphere distribution
-    const r = STAR_RADIUS * Math.cbrt(rng())
-    const theta = rng() * Math.PI * 2
-    const phi = Math.acos(2 * rng() - 1)
-
-    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
-    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
-    positions[i * 3 + 2] = r * Math.cos(phi)
-
-    const s = pickSpectrum()
-    colors[i * 3] = s.r
-    colors[i * 3 + 1] = s.g
-    colors[i * 3 + 2] = s.b
-
-    // Size distribution: mostly tiny, few bigger
-    const magRoll = rng()
-    if (magRoll < 0.90) {
-      sizes[i] = rng() * 1.5 + 0.8
-    } else if (magRoll < 0.98) {
-      sizes[i] = rng() * 2.5 + 2.0
+    const tint = rng()
+    if (tint < 0.6) {
+      colors[i * 3] = 0.88
+      colors[i * 3 + 1] = 0.86
+      colors[i * 3 + 2] = 0.94
+    } else if (tint < 0.85) {
+      colors[i * 3] = 0.72
+      colors[i * 3 + 1] = 0.74
+      colors[i * 3 + 2] = 0.92
     } else {
-      sizes[i] = rng() * 4.0 + 3.5
+      colors[i * 3] = 0.96
+      colors[i * 3 + 1] = 0.84
+      colors[i * 3 + 2] = 0.62
     }
 
+    sizes[i] = 0.4 + rng() * 1.4
     phases[i] = rng() * Math.PI * 2
-    twinkleSpeeds[i] = rng() * 2.5 + 0.4
+    speeds[i] = 0.15 + rng() * 1.2
   }
 
-  return { positions, colors, sizes, phases, twinkleSpeeds }
+  return { positions, colors, sizes, phases, speeds }
 }
 
-/* ── Shooting star state (unchanged logic) ── */
-
-interface ShootingState {
-  active: boolean
-  x: number
-  y: number
-  z: number
-  vx: number
-  vy: number
-  timer: number
-  nextSpawn: number
-}
-
-export function SkyDome({ progressRef, active = true, quality }: { progressRef: RefObject<number>; active?: boolean; quality: QualityTier }) {
+export function SkyDome({ progressRef }: { progressRef: RefObject<number> }) {
   const { gl } = useThree()
-  const starCount = quality.starCount
 
-  /* Nebula dome */
-  const nebulaMatRef = useRef<THREE.ShaderMaterial | null>(null)
-  nebulaMatRef.current ??= new THREE.ShaderMaterial({
-    vertexShader: NEBULA_VERTEX,
-    fragmentShader: NEBULA_FRAGMENT,
-    uniforms: {
-      uTime: { value: 0 },
-      uOpacity: { value: 0 },
-    },
+  /* Sky dome */
+  const skyMat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: SKY_VERTEX,
+    fragmentShader: SKY_FRAGMENT,
+    uniforms: { uOpacity: { value: 0 } },
     side: THREE.BackSide,
     depthWrite: false,
     transparent: true,
-  })
+  }), [])
 
-  const starFragmentShader = quality.level === 'low' ? STAR_FRAGMENT_SIMPLE : STAR_FRAGMENT_FULL
+  /* Moon */
+  const moonPos = useMemo(() => new THREE.Vector3(
+    MOON_DIST * Math.sin(MOON_THETA) * Math.cos(MOON_PHI),
+    MOON_DIST * Math.cos(MOON_THETA),
+    MOON_DIST * Math.sin(MOON_THETA) * Math.sin(MOON_PHI),
+  ), [])
 
-  /* Star field */
-  const starDataRef = useRef<ReturnType<typeof generateStarData> | null>(null)
-  starDataRef.current ??= generateStarData(starCount)
+  const moonTex = useTexture('/images/bloodMoon.webp')
+  moonTex.colorSpace = THREE.SRGBColorSpace
+  const moonGlowTex = useMemo(() => getMoonGlowTexture(), [])
+  const vignetteTex = useMemo(() => getVignetteTexture(), [])
+  const moonLightPos = useMemo(() => moonPos.clone().multiplyScalar(0.7), [moonPos])
 
-  const starGeoRef = useRef<THREE.BufferGeometry | null>(null)
-  const starMatRef = useRef<THREE.ShaderMaterial | null>(null)
-  starGeoRef.current ??= (() => {
+  /* Stars */
+  const starGeo = useMemo(() => {
+    const data = generateStarData()
     const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(starDataRef.current.positions, 3))
-    geo.setAttribute('aColor', new THREE.BufferAttribute(starDataRef.current.colors, 3))
-    geo.setAttribute('aSize', new THREE.BufferAttribute(starDataRef.current.sizes, 1))
-    geo.setAttribute('aPhase', new THREE.BufferAttribute(starDataRef.current.phases, 1))
-    geo.setAttribute('aTwinkleSpeed', new THREE.BufferAttribute(starDataRef.current.twinkleSpeeds, 1))
+    geo.setAttribute('position', new THREE.BufferAttribute(data.positions, 3))
+    geo.setAttribute('aColor', new THREE.BufferAttribute(data.colors, 3))
+    geo.setAttribute('aSize', new THREE.BufferAttribute(data.sizes, 1))
+    geo.setAttribute('aPhase', new THREE.BufferAttribute(data.phases, 1))
+    geo.setAttribute('aSpeed', new THREE.BufferAttribute(data.speeds, 1))
     return geo
-  })()
-  starMatRef.current ??= new THREE.ShaderMaterial({
+  }, [])
+
+  const starMat = useMemo(() => new THREE.ShaderMaterial({
     vertexShader: STAR_VERTEX,
-    fragmentShader: starFragmentShader,
+    fragmentShader: STAR_FRAGMENT,
     uniforms: {
       uTime: { value: 0 },
+      uOpacity: { value: 0 },
       uPixelRatio: { value: Math.min(gl.getPixelRatio(), 2) },
     },
     transparent: true,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
-  })
+  }), [gl])
 
-  /* Shooting stars */
-  const shootingState = useRef<ShootingState>({
-    active: false,
-    x: 0,
-    y: 0,
-    z: 0,
-    vx: 0,
-    vy: 0,
-    timer: 0,
-    nextSpawn: 1.2,
-  })
-  const shootingStarRef = useRef<THREE.Mesh>(null)
-  const shootingTrailRef = useRef<THREE.Mesh>(null)
+  const skyMatRef = useRef(skyMat)
+  const starMatRef = useRef(starMat)
 
   useFrame((_state, delta) => {
     const reveal = THREE.MathUtils.smoothstep(progressRef.current, 0.0, 0.22)
-
-    const nMat = nebulaMatRef.current
-    const sMat = starMatRef.current
-    if (nMat) {
-      if (active) {
-        ;(nMat.uniforms.uTime.value as number) += delta
-      }
-      nMat.uniforms.uOpacity.value = reveal
-    }
-    if (sMat && active) {
-      ;(sMat.uniforms.uTime.value as number) += delta
-    }
-
-    if (!active) return
-
-    const s = shootingState.current
-    s.timer += delta
-
-    if (!s.active && s.timer >= s.nextSpawn && reveal > 0.5) {
-      s.active = true
-      s.x = (Math.random() - 0.5) * 28
-      s.y = Math.random() * 5 + 5.5
-      s.z = -10 - Math.random() * 8
-      s.vx = (Math.random() - 0.3) * 4.5
-      s.vy = -(Math.random() * 1.8 + 0.9)
-      s.timer = 0
-    }
-
-    if (s.active && shootingStarRef.current && shootingTrailRef.current) {
-      s.x += s.vx * delta
-      s.y += s.vy * delta
-
-      shootingStarRef.current.visible = true
-      shootingTrailRef.current.visible = true
-      shootingStarRef.current.position.set(s.x, s.y, s.z)
-      shootingTrailRef.current.position.set(
-        s.x - s.vx * 0.05,
-        s.y - s.vy * 0.05,
-        s.z,
-      )
-
-      const falloff = Math.max(0, Math.min(1, s.y / 3))
-      const headMat = shootingStarRef.current.material as THREE.MeshBasicMaterial
-      const trailMat = shootingTrailRef.current.material as THREE.MeshBasicMaterial
-      headMat.opacity = falloff * reveal
-      trailMat.opacity = falloff * 0.4 * reveal
-
-      if (s.y < -1 || s.x < -18 || s.x > 18) {
-        s.active = false
-        s.nextSpawn = Math.random() * 2.0 + 0.6
-        s.timer = 0
-        shootingStarRef.current.visible = false
-        shootingTrailRef.current.visible = false
-      }
-    }
+    skyMatRef.current.uniforms.uOpacity.value = reveal
+    ;(starMatRef.current.uniforms.uTime.value as number) += delta
+    starMatRef.current.uniforms.uOpacity.value = reveal
   })
 
   return (
     <group>
-      <mesh renderOrder={-1000} material={nebulaMatRef.current}>
-        <sphereGeometry args={[60, 32, 32]} />
+      <mesh renderOrder={-1000} material={skyMat}>
+        <sphereGeometry args={[28, 32, 32]} />
       </mesh>
 
-      <points geometry={starGeoRef.current} material={starMatRef.current} renderOrder={-999} />
-
-      <mesh ref={shootingStarRef} visible={false}>
-        <sphereGeometry args={[0.035, 8, 8]} />
-        <meshBasicMaterial
-          color="#FFFFFF"
+      <sprite position={moonPos} scale={[8.5, 8.5, 1]} renderOrder={-998}>
+        <spriteMaterial
+          map={moonGlowTex}
           transparent
-          opacity={1}
+          opacity={0.5}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
-          fog={false}
         />
-      </mesh>
+      </sprite>
 
-      <mesh ref={shootingTrailRef} visible={false}>
-        <sphereGeometry args={[0.02, 8, 8]} />
-        <meshBasicMaterial
-          color="#A8C0F0"
+      <sprite position={moonPos} scale={[4.5, 4.5, 1]} renderOrder={-997}>
+        <spriteMaterial
+          map={moonTex}
+          alphaMap={vignetteTex}
           transparent
-          opacity={0.34}
-          blending={THREE.AdditiveBlending}
           depthWrite={false}
-          fog={false}
         />
-      </mesh>
+      </sprite>
+
+      <pointLight position={moonLightPos} intensity={1.4} color="#cc3322" distance={35} decay={1.8} />
+
+      <points geometry={starGeo} material={starMat} renderOrder={-999} />
     </group>
   )
 }

@@ -205,6 +205,57 @@ function InteriorDecorInner({ floorY, centerZ, progressRef }: InteriorDecorProps
         <pointLight position={[0, 0.14, 0]} intensity={0.4} color="#ff624d" distance={1.5} decay={1} />
       </group>
 
+      {/* ── Katana display stand — left wall ── */}
+      <group position={[0.11, floorY, centerZ - 1.56]}>
+        {/* Stand base */}
+        <mesh position={[0, 0.015, 0]}>
+          <boxGeometry args={[0.55, 0.03, 0.10]} />
+          <meshStandardMaterial color="#3A2518" roughness={0.6} />
+        </mesh>
+        {/* Left upright */}
+        <mesh position={[-0.2, 0.085, 0]}>
+          <boxGeometry args={[0.025, 0.14, 0.06]} />
+          <meshStandardMaterial color="#2E1C10" roughness={0.55} />
+        </mesh>
+        {/* Right upright */}
+        <mesh position={[0.2, 0.085, 0]}>
+          <boxGeometry args={[0.025, 0.14, 0.06]} />
+          <meshStandardMaterial color="#2E1C10" roughness={0.55} />
+        </mesh>
+        {/* Katana — blade */}
+        <mesh position={[0, 0.168, 0]} rotation={[0, 0, -0.02]}>
+          <boxGeometry args={[0.88, 0.01, 0.035]} />
+          <meshStandardMaterial color="#C0C8D4" roughness={0.12} metalness={0.95} />
+        </mesh>
+        {/* Blade ridge (hamon) */}
+        <mesh position={[0, 0.173, 0.001]} rotation={[0, 0, -0.02]}>
+          <boxGeometry args={[0.86, 0.004, 0.022]} />
+          <meshStandardMaterial color="#D8E0E8" roughness={0.08} metalness={0.9} />
+        </mesh>
+        {/* Tsuba (guard) */}
+        <mesh position={[-0.44, 0.165, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.045, 0.045, 0.005, 24]} />
+          <meshStandardMaterial color="#8B6914" roughness={0.35} metalness={0.8} />
+        </mesh>
+        {/* Tsuka (handle) */}
+        <mesh position={[-0.54, 0.165, 0]}>
+          <boxGeometry args={[0.2, 0.019, 0.022]} />
+          <meshStandardMaterial color="#1A0F08" roughness={0.7} />
+        </mesh>
+        {/* Handle wrap diamonds */}
+        {[-0.05, 0, 0.05].map((dx, i) => (
+          <mesh key={`wrap-${i}`} position={[-0.54 + dx, 0.165, 0]}>
+            <boxGeometry args={[0.025, 0.02, 0.023]} />
+            <meshStandardMaterial color="#8B6914" roughness={0.3} metalness={0.7} />
+          </mesh>
+        ))}
+        {/* Kashira (pommel) */}
+        <mesh position={[-0.645, 0.165, 0]}>
+          <boxGeometry args={[0.01, 0.022, 0.024]} />
+          <meshStandardMaterial color="#8B6914" roughness={0.3} metalness={0.8} />
+        </mesh>
+      </group>
+
   
     </group>
   )

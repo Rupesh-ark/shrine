@@ -6,17 +6,15 @@ const OUTSIDE_Z = 3.0
 const MOBILE_OUTSIDE_Z = 3.5
 const INSIDE_Z = -1.5
 const SCROLL_Z = -1.8
-const BASE_Y = 1.1
-const INTRO_Y = 2.75
-const MOBILE_INTRO_Y = 2.9
+const BASE_Y = 2.48
+const INTRO_Y = 4.13
+const MOBILE_INTRO_Y = 4.28
 const TOP_DOWN_Z = 1.5
-const DEFAULT_GROUND_TOP_Y = -1.35
 const CAMERA_TRANSITION_END = 0.28
 const INTRO_LOOK_AT_Y_BIAS = 0.30
-const GROUND_HEIGHT = 6
 const TOP_DOWN_HOLD_END = 0.16
-const DESKTOP_TOP_DOWN_Y = 5.95
-const MOBILE_TOP_DOWN_ENTRY_Y = 6.95
+const DESKTOP_TOP_DOWN_Y = 7.33
+const MOBILE_TOP_DOWN_ENTRY_Y = 8.33
 
 function blendProjectionMatrices(
   target: THREE.Matrix4,
@@ -55,10 +53,6 @@ export function useCameraAnimation(progressRef: React.RefObject<number>, entered
     scrollFocusRef.current = position.clone()
   }, [])
 
-  const groundTopY = houseBounds?.min.y ?? DEFAULT_GROUND_TOP_Y
-  const groundCenterY = groundTopY - GROUND_HEIGHT / 2
-  const overlayBaseY = groundTopY + 0.01
-
   const houseFrame = useMemo(() => {
     if (!houseBounds) return null
 
@@ -92,10 +86,8 @@ export function useCameraAnimation(progressRef: React.RefObject<number>, entered
   }, [])
 
   useFrame((state, delta) => {
-    // Pause camera animation while gate overlay is visible.
-    // The model still loads in the background; we just skip per-frame
-    // camera movement and CSS updates that compete with the gate CSS transition.
     if (!entered) return
+    if ((window as unknown as Record<string, unknown>).__debugOrbit) return
 
     timeRef.current += delta
     const progress = progressRef.current
@@ -222,9 +214,6 @@ export function useCameraAnimation(progressRef: React.RefObject<number>, entered
   })
 
   return {
-    groundTopY,
-    groundCenterY,
-    overlayBaseY,
     handleBounds,
     handleScrollFocus,
   }

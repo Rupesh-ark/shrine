@@ -1,7 +1,7 @@
-import { memo, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
-import { AdaptiveDpr, AdaptiveEvents, PerformanceMonitor, Preload } from '@react-three/drei'
+import { AdaptiveDpr, AdaptiveEvents, OrbitControls, PerformanceMonitor, Preload } from '@react-three/drei'
 import { Scene } from './Scene'
 import { PostProcessing } from './PostProcessing'
 import type { SceneProps } from '../types'
@@ -9,16 +9,32 @@ import { useIsMobile, useQuality } from '../hooks/useIsMobile'
 
 function getCamera(isMobile: boolean) {
   return {
-    position: isMobile ? ([0, 7.5, 1.5] as const) : ([0, 7.0, 1.5] as const),
+    position: isMobile ? ([0, 8.9, 1.5] as const) : ([0, 8.4, 1.5] as const),
     fov: isMobile ? 62 : 50,
   }
 }
 
 function CanvasScene({ onHouseReady, entered }: SceneProps) {
   const [dpr, setDpr] = useState(1.5)
+  const [orbitEnabled, setOrbitEnabled] = useState(false)
   const isMobile = useIsMobile()
   const quality = useQuality()
   const camera = getCamera(isMobile)
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.shiftKey && e.key === 'O') {
+        setOrbitEnabled(prev => {
+          const next = !prev
+          ;(window as unknown as Record<string, unknown>).__debugOrbit = next
+          return next
+        })
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <Canvas
@@ -48,6 +64,7 @@ function CanvasScene({ onHouseReady, entered }: SceneProps) {
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <Preload all />
+      {orbitEnabled && <OrbitControls />}
       <Scene onHouseReady={onHouseReady} entered={entered} quality={quality} />
       {quality.bloom && <PostProcessing bloomIntensity={quality.bloomIntensity} />}
     </Canvas>
