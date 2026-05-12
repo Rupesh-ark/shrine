@@ -204,7 +204,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
 
     if (focus) {
       const now = performance.now()
-      if (now - lastCssUpdateRef.current > 50) {
+      if (now - lastCssUpdateRef.current > 80) {
         lastCssUpdateRef.current = now
 
         const projected = focus.clone().project(state.camera)

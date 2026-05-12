@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { getToonGradientMap } from '../utils/toon'
+import type { QualityTier } from '../hooks/useIsMobile'
+import { DEFAULT_QUALITY } from '../hooks/useIsMobile'
 
 function hash2D(ix: number, iy: number): number {
   let h = (ix * 374761393 + iy * 668265263) | 0
@@ -41,9 +43,14 @@ function fbm(x: number, y: number, octaves = 4): number {
 
 interface TerrainGroundProps {
   overlayBaseY: number
+  quality?: QualityTier
 }
 
-export function TerrainGround({ overlayBaseY }: TerrainGroundProps) {
+export function TerrainGround({ overlayBaseY, quality = DEFAULT_QUALITY }: TerrainGroundProps) {
+  const segs = quality.terrainSegments
+  const seg0 = segs[0]
+  const seg1 = segs[1]
+  const seg2 = segs[2]
   const layers = useMemo(() => {
     const createLayer = (
       width: number,
@@ -84,28 +91,28 @@ export function TerrainGround({ overlayBaseY }: TerrainGroundProps) {
 
     return [
       {
-        geometry: createLayer(80, 80, 100, 1.6, 0.25, 0.12, 0, 0),
+        geometry: createLayer(80, 80, seg0, 1.6, 0.25, 0.12, 0, 0),
         color: '#1e2c36',
         opacity: 0.65,
         offsetY: 0,
         offsetZ: 2,
       },
       {
-        geometry: createLayer(60, 50, 80, 1.1, 0.3, 0.16, 40, 25),
+        geometry: createLayer(60, 50, seg1, 1.1, 0.3, 0.16, 40, 25),
         color: '#263842',
         opacity: 0.35,
         offsetY: 0.003,
         offsetZ: -8,
       },
       {
-        geometry: createLayer(45, 35, 64, 0.7, 0.35, 0.2, -25, -15),
+        geometry: createLayer(45, 35, seg2, 0.7, 0.35, 0.2, -25, -15),
         color: '#2e424d',
         opacity: 0.28,
         offsetY: 0.006,
         offsetZ: 5,
       },
     ]
-  }, [])
+  }, [seg0, seg1, seg2])
 
   return (
     <>

@@ -10,7 +10,7 @@ import {
   BlendFunction,
 } from 'postprocessing'
 
-export function PostProcessing() {
+export function PostProcessing({ bloomIntensity = 1.25 }: { bloomIntensity?: number }) {
   const composerRef = useRef<EffectComposer | null>(null)
   const { gl, scene, camera, size } = useThree()
 
@@ -26,7 +26,7 @@ export function PostProcessing() {
       new EffectPass(
         camera,
         new BloomEffect({
-          intensity: 1.25,
+          intensity: bloomIntensity,
           luminanceThreshold: 0.55,
           luminanceSmoothing: 0.75,
           mipmapBlur: true,
@@ -45,7 +45,7 @@ export function PostProcessing() {
     return () => {
       composer.dispose()
     }
-  }, [gl, scene, camera, size.width, size.height])
+  }, [gl, scene, camera, size.width, size.height, bloomIntensity])
 
   useEffect(() => {
     composerRef.current?.setSize(size.width, size.height)

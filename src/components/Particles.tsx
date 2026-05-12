@@ -2,12 +2,15 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { seededRandom } from '../utils/random'
+import type { QualityTier } from '../hooks/useIsMobile'
+import { DEFAULT_QUALITY } from '../hooks/useIsMobile'
 
-const PARTICLE_COUNT = 180
 const AREA_SIZE = 18
 
-export function FallingParticles({ active = true }: { active?: boolean }) {
+export function FallingParticles({ active = true, quality = DEFAULT_QUALITY }: { active?: boolean; quality?: QualityTier }) {
   const meshRef = useRef<THREE.Points>(null)
+  const PARTICLE_COUNT = quality.particleCount
+  const frameCountRef = useRef(0)
 
   const { positions, speeds, phases } = useMemo(() => {
     const positions = new Float32Array(PARTICLE_COUNT * 3)
@@ -24,7 +27,7 @@ export function FallingParticles({ active = true }: { active?: boolean }) {
     }
 
     return { positions, speeds, phases }
-  }, [])
+  }, [PARTICLE_COUNT])
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry()
@@ -32,18 +35,22 @@ export function FallingParticles({ active = true }: { active?: boolean }) {
     return geo
   }, [positions])
 
+  const frameSkip = quality.level === 'low' ? 2 : quality.level === 'medium' ? 1 : 0
+
   useFrame((state) => {
-    if (!active) return
-    if (!meshRef.current) return
+    if (!active || !meshRef.current) return
+    frameCountRef.current++
+    if (frameSkip > 0 && frameCountRef.current % (frameSkip + 1) !== 0) return
+
     const posAttr = meshRef.current.geometry.attributes.position
     const posArray = posAttr.array as Float32Array
     const t = state.clock.elapsedTime
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      posArray[i * 3 + 1] -= speeds[i] * 0.012
+      posArray[i * 3 + 1] -= speeds[i] * 0.012 * (frameSkip + 1)
 
-      posArray[i * 3] += Math.sin(t * 0.5 + phases[i]) * 0.002
-      posArray[i * 3 + 2] += Math.cos(t * 0.3 + phases[i]) * 0.002
+      posArray[i * 3] += Math.sin(t * 0.5 + phases[i]) * 0.002 * (frameSkip + 1)
+      posArray[i * 3 + 2] += Math.cos(t * 0.3 + phases[i]) * 0.002 * (frameSkip + 1)
 
       if (posArray[i * 3 + 1] < -1.8) {
         const rng = seededRandom(Math.floor((t + i) * 1000))

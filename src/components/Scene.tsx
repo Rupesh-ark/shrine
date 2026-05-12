@@ -12,10 +12,12 @@ import { GroundMist } from './Mist'
 import { SceneLighting } from './SceneLighting'
 import { TerrainGround } from './TerrainGround'
 import { getToonGradientMap } from '../utils/toon'
+import { DEFAULT_QUALITY } from '../hooks/useIsMobile'
+import type { QualityTier } from '../hooks/useIsMobile'
 
 const GROUND_HEIGHT = 6
 
-export function Scene({ progress, onHouseReady, entered }: SceneProps) {
+export function Scene({ progress, onHouseReady, entered, quality = DEFAULT_QUALITY }: SceneProps & { quality?: QualityTier }) {
   const { groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress, entered)
   const [modelReady, setModelReady] = useState(false)
   const [shadersReady, setShadersReady] = useState(false)
@@ -36,9 +38,9 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
 
   return (
     <Bvh firstHitOnly>
-      <SceneLighting />
+      <SceneLighting quality={quality} />
 
-      <SkyDome progress={progress} />
+      <SkyDome progress={progress} quality={quality} />
 
       {/* Ground volume */}
       <mesh position={[0, groundCenterY, 0]}>
@@ -47,31 +49,33 @@ export function Scene({ progress, onHouseReady, entered }: SceneProps) {
       </mesh>
 
       {/* Irregular terrain overlays */}
-      <TerrainGround overlayBaseY={overlayBaseY} />
+      <TerrainGround overlayBaseY={overlayBaseY} quality={quality} />
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={handleModelReady} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={handleModelReady} maxPointLights={quality.maxPointLights} showRedSpirits={quality.redSpirits} />
       </Suspense>
 
       <Suspense fallback={null}>
-        <BambooForest />
+        <BambooForest quality={quality} />
       </Suspense>
 
       <ShaderPrecompiler enabled={modelReady} onDone={handleShadersReady} />
 
-      <ContactShadows
-        position={[0, overlayBaseY, 0]}
-        opacity={0.72}
-        scale={24}
-        blur={2}
-        far={4}
-        color="#06090d"
-      />
+      {quality.contactShadows && (
+        <ContactShadows
+          position={[0, overlayBaseY, 0]}
+          opacity={0.72}
+          scale={24}
+          blur={2}
+          far={4}
+          color="#06090d"
+        />
+      )}
 
       <Fireflies />
-      <BlueSpirits />
-      <FallingParticles />
-      <GroundMist />
+      {quality.level !== 'low' && <BlueSpirits />}
+      <FallingParticles quality={quality} />
+      <GroundMist layers={quality.mistLayers} />
     </Bvh>
   )
 }

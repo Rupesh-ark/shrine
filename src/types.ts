@@ -6,6 +6,8 @@ export interface HouseModelProps {
   onScrollFocus?: (position: Vector3) => void
   progress?: number
   onReady?: () => void
+  maxPointLights?: number
+  showRedSpirits?: boolean
 }
 
 export interface DoorAnimData {
@@ -71,13 +73,17 @@ export interface RedSpiritsProps {
 export interface SkyDomeProps {
   progress: number
   active?: boolean
+  quality?: QualityTier
 }
 
 export interface SceneProps {
   progress: number
   onHouseReady?: () => void
   entered?: boolean
+  quality?: QualityTier
 }
+
+export type QualityTier = import('./hooks/useIsMobile').QualityTier  // eslint-disable-line @typescript-eslint/consistent-type-imports
 
 // Hook types
 export interface ShootingState {

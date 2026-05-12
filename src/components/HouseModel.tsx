@@ -448,6 +448,8 @@ export function HouseModel({
   onScrollFocus,
   progress = 0,
   onReady,
+  maxPointLights = Infinity,
+  showRedSpirits = true,
 }: HouseModelProps) {
   const { scene: loadedScene } = useGLTF(MODEL_URL, '/draco/') as GLTF
   const scene = useMemo(() => loadedScene.clone(true), [loadedScene])
@@ -833,7 +835,7 @@ export function HouseModel({
 
     // Throttle 2D canvas animation to ~15 FPS to reduce main-thread pressure
     const now = performance.now()
-    if (now - lastScreenUpdateRef.current < 67) return
+    if (now - lastScreenUpdateRef.current < 100) return
     lastScreenUpdateRef.current = now
 
     animateScreenParticles(particles, state.clock.elapsedTime, canvas, texture, openProgress, openProgress)
@@ -870,7 +872,7 @@ export function HouseModel({
   return (
     <group ref={groupRef} rotation={[0, 0, 0]}>
       <primitive object={scene} />
-      {lanternLights.map((light, index) => (
+      {lanternLights.slice(0, maxPointLights).map((light, index) => (
         <pointLight
           key={`lantern-light-${String(index)}`}
           position={light.pos}
@@ -880,14 +882,16 @@ export function HouseModel({
           decay={2}
         />
       ))}
-      <pointLight
-        position={[0, 2.8, 0]}
-        intensity={1.35}
-        color="#FFD7A3"
-        distance={8}
-        decay={2}
-      />
-      {oniPositions.length > 0 && <RedSpirits positions={oniPositions} />}
+      {maxPointLights > 0 && (
+        <pointLight
+          position={[0, 2.8, 0]}
+          intensity={1.35}
+          color="#FFD7A3"
+          distance={8}
+          decay={2}
+        />
+      )}
+      {showRedSpirits && oniPositions.length > 0 && <RedSpirits positions={oniPositions} />}
       {sealPlane && (
         <group position={sealPlane.position}>
           <mesh ref={sealMeshRef}>

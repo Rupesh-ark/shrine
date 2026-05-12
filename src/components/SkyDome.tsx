@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { seededRandom } from '../utils/random'
-import type { SkyDomeProps } from '../types'
+import type { QualityTier } from '../hooks/useIsMobile'
 
 /* ── Nebula background shader ── */
 
@@ -70,7 +70,6 @@ const NEBULA_FRAGMENT = `
 
 /* ── Star field shaders ── */
 
-const STAR_COUNT = 12000
 const STAR_RADIUS = 55
 
 const STAR_VERTEX = `
@@ -102,7 +101,21 @@ const STAR_VERTEX = `
   }
 `
 
-const STAR_FRAGMENT = `
+const STAR_FRAGMENT_SIMPLE = `
+  varying vec3 vColor;
+  varying float vAlpha;
+
+  void main() {
+    float d = length(gl_PointCoord * 2.0 - 1.0);
+    float core = exp(-d * d * 12.0);
+    float alpha = core * vAlpha;
+    if (alpha < 0.02) discard;
+    vec3 finalColor = mix(vColor, vec3(1.0), core * 0.6);
+    gl_FragColor = vec4(finalColor, alpha);
+  }
+`
+
+const STAR_FRAGMENT_FULL = `
   varying vec3 vColor;
   varying float vAlpha;
 
@@ -110,12 +123,10 @@ const STAR_FRAGMENT = `
     vec2 uv = gl_PointCoord * 2.0 - 1.0;
     float d = length(uv);
 
-    // Pointy diffraction spikes (cross rays)
     float rayX = exp(-abs(uv.x) * 35.0) * exp(-abs(uv.y) * 1.2);
     float rayY = exp(-abs(uv.y) * 35.0) * exp(-abs(uv.x) * 1.2);
     float rays = (rayX + rayY) * 0.85;
 
-    // Bright core + soft halo
     float core = exp(-d * d * 18.0);
     float halo = exp(-d * d * 4.0) * 0.35;
 
@@ -129,14 +140,14 @@ const STAR_FRAGMENT = `
   }
 `
 
-function generateStarData() {
+function generateStarData(count: number) {
   const rng = seededRandom(42)
 
-  const positions = new Float32Array(STAR_COUNT * 3)
-  const colors = new Float32Array(STAR_COUNT * 3)
-  const sizes = new Float32Array(STAR_COUNT)
-  const phases = new Float32Array(STAR_COUNT)
-  const twinkleSpeeds = new Float32Array(STAR_COUNT)
+  const positions = new Float32Array(count * 3)
+  const colors = new Float32Array(count * 3)
+  const sizes = new Float32Array(count)
+  const phases = new Float32Array(count)
+  const twinkleSpeeds = new Float32Array(count)
 
   // Spectral colour weights (same as original SkyDome)
   const spectra = [
@@ -159,7 +170,7 @@ function generateStarData() {
     return spectra[3]
   }
 
-  for (let i = 0; i < STAR_COUNT; i++) {
+  for (let i = 0; i < count; i++) {
     // Sphere distribution
     const r = STAR_RADIUS * Math.cbrt(rng())
     const theta = rng() * Math.PI * 2
@@ -204,8 +215,9 @@ interface ShootingState {
   nextSpawn: number
 }
 
-export function SkyDome({ progress, active = true }: SkyDomeProps) {
+export function SkyDome({ progress, active = true, quality }: { progress: number; active?: boolean; quality: QualityTier }) {
   const { gl } = useThree()
+  const starCount = quality.starCount
 
   /* Nebula dome */
   const nebulaMatRef = useRef<THREE.ShaderMaterial | null>(null)
@@ -221,9 +233,11 @@ export function SkyDome({ progress, active = true }: SkyDomeProps) {
     transparent: true,
   })
 
+  const starFragmentShader = quality.level === 'low' ? STAR_FRAGMENT_SIMPLE : STAR_FRAGMENT_FULL
+
   /* Star field */
   const starDataRef = useRef<ReturnType<typeof generateStarData> | null>(null)
-  starDataRef.current ??= generateStarData()
+  starDataRef.current ??= generateStarData(starCount)
 
   const starGeoRef = useRef<THREE.BufferGeometry | null>(null)
   const starMatRef = useRef<THREE.ShaderMaterial | null>(null)
@@ -238,7 +252,7 @@ export function SkyDome({ progress, active = true }: SkyDomeProps) {
   })()
   starMatRef.current ??= new THREE.ShaderMaterial({
     vertexShader: STAR_VERTEX,
-    fragmentShader: STAR_FRAGMENT,
+    fragmentShader: starFragmentShader,
     uniforms: {
       uTime: { value: 0 },
       uPixelRatio: { value: Math.min(gl.getPixelRatio(), 2) },
