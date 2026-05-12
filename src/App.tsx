@@ -4,6 +4,7 @@ import { HeroOverlay } from './components/HeroOverlay'
 import { ProgressOverlay } from './components/ProgressOverlay'
 import { MusicOverlay } from './components/MusicOverlay'
 import { EntryGate } from './components/EntryGate'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { GRAIN_URL } from './constants/grain'
 import { useIsMobile } from './hooks/useIsMobile'
 
@@ -50,6 +51,11 @@ export function App() {
   const isMobile = useIsMobile()
 
   useEffect(() => {
+    document.documentElement.style.setProperty('--fade-bottom', String(1 - Math.min(1, progress / 0.12)))
+    document.documentElement.style.setProperty('--fade-vignette', String(Math.max(0, 1 - progress / 0.22)))
+  }, [progress])
+
+  useEffect(() => {
     if (entered) {
       void import('./components/ScrollOverlay')
     }
@@ -85,9 +91,11 @@ export function App() {
   return (
     <div style={{ position: 'fixed', inset: 0, isolation: 'isolate' }}>
       <EntryGate onEnter={handleEnter} ready={houseReady} />
-      <Suspense fallback={null}>
-        <CanvasScene progress={progress} onHouseReady={handleHouseReady} entered={entered} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <CanvasScene onHouseReady={handleHouseReady} entered={entered} />
+        </Suspense>
+      </ErrorBoundary>
       <div
         aria-hidden
         style={{
@@ -112,7 +120,7 @@ export function App() {
           height: '28vh',
           pointerEvents: 'none',
           zIndex: 4,
-          opacity: 1 - Math.min(1, progress / 0.12),
+          opacity: 'var(--fade-bottom)',
           background: 'linear-gradient(to top, #111625 0%, #111625 35%, transparent 100%)',
           transition: 'opacity 0.1s linear',
         }}
@@ -126,7 +134,7 @@ export function App() {
             inset: 0,
             pointerEvents: 'none',
             zIndex: 3,
-            opacity: Math.max(0, 1 - progress / 0.22),
+            opacity: 'var(--fade-vignette)',
             background: `
               radial-gradient(ellipse at 50% 50%, transparent 55%, #111625 100%),
               radial-gradient(ellipse at 50% 70%, transparent 50%, #111625 90%)
@@ -134,10 +142,10 @@ export function App() {
           }}
         />
       )}
-      <HeroOverlay progress={progress} />
-      {import.meta.env.DEV && <ProgressOverlay progress={progress} />}
+      <HeroOverlay />
+      {import.meta.env.DEV && <ProgressOverlay />}
       <Suspense fallback={null}>
-        {entered ? <ScrollOverlay progress={progress} /> : null}
+        {entered ? <ScrollOverlay /> : null}
       </Suspense>
       <MusicOverlay muted={muted} onToggleMute={handleToggleMute} />
     </div>

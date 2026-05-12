@@ -1,11 +1,9 @@
 import { useMemo } from 'react'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { useScrollProgress } from '../hooks/useScrollProgress'
 
-interface HeroOverlayProps {
-  progress: number
-}
-
-export function HeroOverlay({ progress }: HeroOverlayProps) {
+export function HeroOverlay() {
+  const progress = useScrollProgress()
   const fade = useMemo(() => {
     if (progress < 0.02) return 1
     if (progress > 0.18) return 0

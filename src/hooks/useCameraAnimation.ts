@@ -35,7 +35,7 @@ function blendProjectionMatrices(
   return target
 }
 
-export function useCameraAnimation(progress: number, entered?: boolean) {
+export function useCameraAnimation(progressRef: React.RefObject<number>, entered?: boolean) {
   const [houseBounds, setHouseBounds] = useState<THREE.Box3 | null>(null)
   const scrollFocusRef = useRef<THREE.Vector3 | null>(null)
   const orthoProjectionRef = useRef(new THREE.Matrix4())
@@ -45,6 +45,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
   const lastCssUpdateRef = useRef(0)
   const scratchVecA = useRef(new THREE.Vector3())
   const scratchVecB = useRef(new THREE.Vector3())
+  const scratchVecC = useRef(new THREE.Vector3())
 
   const handleBounds = useCallback((bounds: THREE.Box3) => {
     setHouseBounds(bounds.clone())
@@ -97,6 +98,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
     if (!entered) return
 
     timeRef.current += delta
+    const progress = progressRef.current
     const t = timeRef.current
     const focus = scrollFocusRef.current
     const camera = state.camera as THREE.PerspectiveCamera
@@ -207,7 +209,7 @@ export function useCameraAnimation(progress: number, entered?: boolean) {
       if (now - lastCssUpdateRef.current > 80) {
         lastCssUpdateRef.current = now
 
-        const projected = focus.clone().project(state.camera)
+        const projected = scratchVecC.current.copy(focus).project(state.camera)
         const projectedOriginX = THREE.MathUtils.clamp((projected.x * 0.5 + 0.5) * 100, 0, 100)
         const projectedOriginY = THREE.MathUtils.clamp(((-projected.y) * 0.5 + 0.5) * 100, 0, 100)
         const centerT = THREE.MathUtils.smoothstep(progress, 0.5, 0.85)

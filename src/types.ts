@@ -1,10 +1,11 @@
 import type { Box3, Vector3 } from 'three'
 import type { Mesh } from 'three'
+import type { RefObject } from 'react'
 
 export interface HouseModelProps {
   onBounds?: (bounds: Box3) => void
   onScrollFocus?: (position: Vector3) => void
-  progress?: number
+  progressRef?: RefObject<number>
   onReady?: () => void
   maxPointLights?: number
   showRedSpirits?: boolean
@@ -56,7 +57,7 @@ export interface TableWithCushionsProps {
 export interface TableScrollProps {
   floorY: number
   tableZ: number
-  progress?: number
+  progressRef?: RefObject<number>
 }
 
 export interface FlameData {
@@ -77,7 +78,6 @@ export interface SkyDomeProps {
 }
 
 export interface SceneProps {
-  progress: number
   onHouseReady?: () => void
   entered?: boolean
   quality?: QualityTier

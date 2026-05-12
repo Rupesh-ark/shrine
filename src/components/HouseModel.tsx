@@ -446,7 +446,7 @@ function animateScreenParticles(
 export function HouseModel({
   onBounds,
   onScrollFocus,
-  progress = 0,
+  progressRef,
   onReady,
   maxPointLights = Infinity,
   showRedSpirits = true,
@@ -495,6 +495,7 @@ export function HouseModel({
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     return geo
   }, [])
+  const interiorGroupRef = useRef<THREE.Group>(null)
   const lastScreenUpdateRef = useRef(0)
   const doorAnimationCompleteRef = useRef(false)
 
@@ -810,6 +811,8 @@ export function HouseModel({
   }, [onBounds, onScrollFocus, scene])
 
   useFrame((state) => {
+    const progress = progressRef?.current ?? 0
+
     const openProgress = THREE.MathUtils.clamp(
       (progress - DOOR_OPEN_START_PROGRESS) / (DOOR_OPEN_END_PROGRESS - DOOR_OPEN_START_PROGRESS),
       0,
@@ -865,9 +868,11 @@ export function HouseModel({
       sealBurstMaterialRef.current.opacity = popProgress > 0 && popProgress < 1 ? 1 - popProgress : 0
       sealBurstMaterialRef.current.size = 0.012 + popProgress * 0.014
     }
-  })
 
-  const showInterior = progress >= INTERIOR_VISIBLE_PROGRESS
+    if (interiorGroupRef.current) {
+      interiorGroupRef.current.visible = progress >= INTERIOR_VISIBLE_PROGRESS
+    }
+  })
 
   return (
     <group ref={groupRef} rotation={[0, 0, 0]}>
@@ -918,10 +923,10 @@ export function HouseModel({
           </points>
         </group>
       )}
-      <group visible={showInterior}>
+      <group ref={interiorGroupRef}>
         <TableWithCushions floorY={tableFloorY} centerZ={tableCenterZ} />
-        <TableScroll floorY={tableFloorY} tableZ={tableCenterZ - TABLE_OFFSET_Z} progress={progress} />
-        <InteriorDecor floorY={tableFloorY} centerZ={tableCenterZ} />
+        <TableScroll floorY={tableFloorY} tableZ={tableCenterZ - TABLE_OFFSET_Z} progressRef={progressRef} />
+        <InteriorDecor floorY={tableFloorY} centerZ={tableCenterZ} progressRef={progressRef} />
       </group>
     </group>
   )

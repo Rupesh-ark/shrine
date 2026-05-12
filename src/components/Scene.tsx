@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { Bvh, ContactShadows } from '@react-three/drei'
 import { useCameraAnimation } from '../hooks/useCameraAnimation'
+import { useProgressRef } from '../hooks/useScrollProgress'
 import type { SceneProps } from '../types'
 import { BlueSpirits, Fireflies } from './Atmosphere'
 import { BambooForest } from './BambooForest'
@@ -17,8 +18,9 @@ import type { QualityTier } from '../hooks/useIsMobile'
 
 const GROUND_HEIGHT = 6
 
-export function Scene({ progress, onHouseReady, entered, quality = DEFAULT_QUALITY }: SceneProps & { quality?: QualityTier }) {
-  const { groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progress, entered)
+export function Scene({ onHouseReady, entered, quality = DEFAULT_QUALITY }: SceneProps & { quality?: QualityTier }) {
+  const progressRef = useProgressRef()
+  const { groundCenterY, overlayBaseY, handleBounds, handleScrollFocus } = useCameraAnimation(progressRef, entered)
   const [modelReady, setModelReady] = useState(false)
   const [shadersReady, setShadersReady] = useState(false)
 
@@ -40,7 +42,7 @@ export function Scene({ progress, onHouseReady, entered, quality = DEFAULT_QUALI
     <Bvh firstHitOnly>
       <SceneLighting quality={quality} />
 
-      <SkyDome progress={progress} quality={quality} />
+      <SkyDome progressRef={progressRef} quality={quality} />
 
       {/* Ground volume */}
       <mesh position={[0, groundCenterY, 0]}>
@@ -52,7 +54,7 @@ export function Scene({ progress, onHouseReady, entered, quality = DEFAULT_QUALI
       <TerrainGround overlayBaseY={overlayBaseY} quality={quality} />
 
       <Suspense fallback={null}>
-        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progress={progress} onReady={handleModelReady} maxPointLights={quality.maxPointLights} showRedSpirits={quality.redSpirits} />
+        <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progressRef={progressRef} onReady={handleModelReady} maxPointLights={quality.maxPointLights} showRedSpirits={quality.redSpirits} />
       </Suspense>
 
       <Suspense fallback={null}>

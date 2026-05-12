@@ -105,7 +105,7 @@ function createParchmentTex(): THREE.CanvasTexture {
   return tex
 }
 
-export function TableScroll({ floorY, tableZ, progress = 0 }: TableScrollProps) {
+export function TableScroll({ floorY, tableZ, progressRef }: TableScrollProps) {
   const parchmentTex = useMemo(() => createParchmentTex(), [])
   const groupRef = useRef<THREE.Group>(null)
   const glowRef = useRef<THREE.MeshBasicMaterial>(null)
@@ -118,10 +118,14 @@ export function TableScroll({ floorY, tableZ, progress = 0 }: TableScrollProps) 
   const rodLength = scrollW + 0.03
   const rodY = 0.01
   const rodInset = scrollD * 0.52
-  const awaken = THREE.MathUtils.smoothstep(progress, 0.72, 0.88)
 
   useFrame((state) => {
     if (!groupRef.current) return
+    const awaken = THREE.MathUtils.smoothstep(progressRef?.current ?? 0, 0.72, 0.88)
+    if (awaken === 0) {
+      if (glowRef.current) glowRef.current.opacity = 0
+      return
+    }
     const pulse = Math.sin(state.clock.elapsedTime * 6.8) * 0.5 + 0.5
     const tremor = Math.sin(state.clock.elapsedTime * 18) * awaken * 0.0018
     groupRef.current.position.y = tableSurfaceY + SCROLL_LIFT + awaken * 0.026 + pulse * awaken * 0.008

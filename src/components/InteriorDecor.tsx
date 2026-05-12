@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { RefObject } from 'react'
 import { memo, useMemo, useRef } from 'react'
 import { useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
@@ -6,7 +7,7 @@ import { useFrame } from '@react-three/fiber'
 interface InteriorDecorProps {
   floorY: number
   centerZ: number
-  progress?: number
+  progressRef?: RefObject<number>
 }
 
 function createMenaceTextTexture(): THREE.CanvasTexture {
@@ -36,12 +37,13 @@ function createMenaceTextTexture(): THREE.CanvasTexture {
   return texture
 }
 
-function MenaceText({ side }: { side: -1 | 1 }) {
+function MenaceText({ side, progressRef }: { side: -1 | 1; progressRef: RefObject<number> | undefined }) {
   const groupRef = useRef<THREE.Group>(null)
   const materialRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([])
   const texture = useMemo(() => createMenaceTextTexture(), [])
 
   useFrame((state) => {
+    if ((progressRef?.current ?? 0) < 0.6) return
     const t = state.clock.elapsedTime
     if (groupRef.current) {
       groupRef.current.rotation.z = side * 0.18 + t * side * 0.8
@@ -80,7 +82,7 @@ function MenaceText({ side }: { side: -1 | 1 }) {
   )
 }
 
-function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
+function InteriorDecorInner({ floorY, centerZ, progressRef }: InteriorDecorProps) {
   const rawTex = useTexture('/images/right.webp')
 
   const scrollTex = useMemo(() => {
@@ -113,7 +115,7 @@ function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
           <boxGeometry args={[0.22, 0.28, 0.008]} />
           <meshStandardMaterial map={scrollTex} roughness={0.85} />
         </mesh>
-        <MenaceText side={1} />
+        <MenaceText side={1} progressRef={progressRef} />
       </group>
 
       <group position={[-0.20, floorY + 0.6, centerZ - 1.68]}>
@@ -127,7 +129,7 @@ function InteriorDecorInner({ floorY, centerZ }: InteriorDecorProps) {
           <boxGeometry args={[0.22, 0.28, 0.008]} />
           <meshStandardMaterial map={leftScrollTex} roughness={0.85} />
         </mesh>
-        <MenaceText side={-1} />
+        <MenaceText side={-1} progressRef={progressRef} />
       </group>
 
       {/* ── Incense burner on table — original position ── */}

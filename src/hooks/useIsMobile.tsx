@@ -1,29 +1,10 @@
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 const MOBILE_QUERY = '(max-width: 767px)'
 
 function getIsMobile() {
   if (typeof window === 'undefined') return false
   return window.matchMedia(MOBILE_QUERY).matches
-}
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(getIsMobile)
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(MOBILE_QUERY)
-    const handleChange = () => {
-      setIsMobile(mediaQuery.matches)
-    }
-
-    handleChange()
-    mediaQuery.addEventListener('change', handleChange)
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
-  }, [])
-
-  return isMobile
 }
 
 export interface QualityTier {
@@ -50,7 +31,7 @@ const HIGH_QUALITY: QualityTier = {
   contactShadows: true,
   bloom: true,
   bloomIntensity: 1.25,
-  maxPointLights: Infinity,
+  maxPointLights: 3,
   screenFps: 15,
   mistLayers: 2,
   redSpirits: true,
@@ -86,10 +67,9 @@ const LOW_QUALITY: QualityTier = {
   redSpirits: false,
 }
 
-function detectTier(): QualityTier {
+function detectTier(isMobile: boolean): QualityTier {
   if (typeof window === 'undefined') return HIGH_QUALITY
 
-  const isMobile = window.matchMedia(MOBILE_QUERY).matches
   const cores: number = navigator.hardwareConcurrency
   const memory: number = (navigator as unknown as Record<string, unknown>).deviceMemory as number | undefined ?? 4
   const dpr: number = window.devicePixelRatio
@@ -103,7 +83,39 @@ function detectTier(): QualityTier {
 
 export const DEFAULT_QUALITY: QualityTier = HIGH_QUALITY
 
+interface MobileContextValue {
+  isMobile: boolean
+  quality: QualityTier
+}
+
+const MobileContext = createContext<MobileContextValue | null>(null)
+
+export function MobileProvider({ children }: { children: ReactNode }) {
+  const [isMobile, setIsMobile] = useState(getIsMobile)
+  const [quality] = useState(() => detectTier(getIsMobile()))
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY)
+    const handleChange = () => { setIsMobile(mq.matches) }
+    mq.addEventListener('change', handleChange)
+    return () => { mq.removeEventListener('change', handleChange) }
+  }, [])
+
+  return (
+    <MobileContext.Provider value={{ isMobile, quality }}>
+      {children}
+    </MobileContext.Provider>
+  )
+}
+
+export function useIsMobile() {
+  const ctx = useContext(MobileContext)
+  if (!ctx) throw new Error('useIsMobile must be used within <MobileProvider>')
+  return ctx.isMobile
+}
+
 export function useQuality() {
-  const [tier] = useState(detectTier)
-  return tier
+  const ctx = useContext(MobileContext)
+  if (!ctx) throw new Error('useQuality must be used within <MobileProvider>')
+  return ctx.quality
 }

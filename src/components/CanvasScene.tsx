@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { AdaptiveDpr, AdaptiveEvents, PerformanceMonitor, Preload } from '@react-three/drei'
@@ -14,7 +14,7 @@ function getCamera(isMobile: boolean) {
   }
 }
 
-export default function CanvasScene({ progress, onHouseReady, entered }: SceneProps) {
+function CanvasScene({ onHouseReady, entered }: SceneProps) {
   const [dpr, setDpr] = useState(1.5)
   const isMobile = useIsMobile()
   const quality = useQuality()
@@ -48,8 +48,10 @@ export default function CanvasScene({ progress, onHouseReady, entered }: ScenePr
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <Preload all />
-      <Scene progress={progress} onHouseReady={onHouseReady} entered={entered} quality={quality} />
+      <Scene onHouseReady={onHouseReady} entered={entered} quality={quality} />
       {quality.bloom && <PostProcessing bloomIntensity={quality.bloomIntensity} />}
     </Canvas>
   )
 }
+
+export default memo(CanvasScene)

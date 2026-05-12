@@ -1,12 +1,36 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import { useIsMobile } from '../hooks/useIsMobile'
+import { useScrollProgress } from '../hooks/useScrollProgress'
 
-interface ProgressOverlayProps {
-  progress: number
+function useFps() {
+  const [fps, setFps] = useState(0)
+  const frames = useRef(0)
+  const last = useRef(0)
+
+  useEffect(() => {
+    last.current = performance.now()
+    let raf: number
+    const tick = () => {
+      frames.current++
+      const now = performance.now()
+      if (now - last.current >= 500) {
+        setFps(Math.round(frames.current / ((now - last.current) / 1000)))
+        frames.current = 0
+        last.current = now
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => { cancelAnimationFrame(raf) }
+  }, [])
+
+  return fps
 }
 
-export function ProgressOverlay({ progress }: ProgressOverlayProps) {
+export function ProgressOverlay() {
   const isMobile = useIsMobile()
+  const fps = useFps()
+  const progress = useScrollProgress()
   const progressLabel = progress.toFixed(3)
 
   const phase = useMemo(() => {
@@ -103,6 +127,17 @@ export function ProgressOverlay({ progress }: ProgressOverlayProps) {
           }}
         >
           {phase} · {subLabel}
+        </span>
+        <span
+          style={{
+            fontFamily: "'Playfair Display', 'IM Fell English', Georgia, serif",
+            fontSize: isMobile ? '13px' : '15px',
+            lineHeight: 1,
+            color: fps < 30 ? '#e84040' : fps < 50 ? '#c4a77d' : '#6abf69',
+            textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+          }}
+        >
+          {fps} FPS
         </span>
       </div>
 

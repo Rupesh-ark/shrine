@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import type { RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { seededRandom } from '../utils/random'
@@ -215,7 +216,7 @@ interface ShootingState {
   nextSpawn: number
 }
 
-export function SkyDome({ progress, active = true, quality }: { progress: number; active?: boolean; quality: QualityTier }) {
+export function SkyDome({ progressRef, active = true, quality }: { progressRef: RefObject<number>; active?: boolean; quality: QualityTier }) {
   const { gl } = useThree()
   const starCount = quality.starCount
 
@@ -277,7 +278,7 @@ export function SkyDome({ progress, active = true, quality }: { progress: number
   const shootingTrailRef = useRef<THREE.Mesh>(null)
 
   useFrame((_state, delta) => {
-    const reveal = THREE.MathUtils.smoothstep(progress, 0.0, 0.22)
+    const reveal = THREE.MathUtils.smoothstep(progressRef.current, 0.0, 0.22)
 
     const nMat = nebulaMatRef.current
     const sMat = starMatRef.current

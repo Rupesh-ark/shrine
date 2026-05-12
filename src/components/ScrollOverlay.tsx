@@ -1,16 +1,18 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { lazy, Suspense, useRef, useState, useEffect, useCallback } from 'react'
 import { GRAIN_URL } from '../constants/grain'
+import { useScrollProgress } from '../hooks/useScrollProgress'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
 import { SideNav } from './scroll/SideNav'
 import { AmbientParticles } from './scroll/AmbientParticles'
-import { HeroSection } from './sections/HeroSection'
-import { AboutSection } from './sections/AboutSection'
-import { CareerSection } from './sections/CareerSection'
-import { EducationSection } from './sections/EducationSection'
-import { ProjectsSection } from './sections/ProjectsSection'
-import { SkillsSection } from './sections/SkillsSection'
-import { ContactSection } from './sections/ContactSection'
+
+const HeroSection = lazy(() => import('./sections/HeroSection').then(m => ({ default: m.HeroSection })))
+const AboutSection = lazy(() => import('./sections/AboutSection').then(m => ({ default: m.AboutSection })))
+const CareerSection = lazy(() => import('./sections/CareerSection').then(m => ({ default: m.CareerSection })))
+const EducationSection = lazy(() => import('./sections/EducationSection').then(m => ({ default: m.EducationSection })))
+const ProjectsSection = lazy(() => import('./sections/ProjectsSection').then(m => ({ default: m.ProjectsSection })))
+const SkillsSection = lazy(() => import('./sections/SkillsSection').then(m => ({ default: m.SkillsSection })))
+const ContactSection = lazy(() => import('./sections/ContactSection').then(m => ({ default: m.ContactSection })))
 
 const SECTIONS: ScrollSection[] = [
   { id: 'hero',     label: '表紙', en: 'Cover'   },
@@ -32,7 +34,8 @@ const SECTION_COMPONENTS = [
   ContactSection,
 ]
 
-export function ScrollOverlay({ progress }: { progress: number }) {
+export function ScrollOverlay() {
+  const progress = useScrollProgress()
   const revealStart = 0.88
   const revealEnd = 1
   const revealProgress = Math.min(1, Math.max(0, (progress - revealStart) / (revealEnd - revealStart)))
@@ -231,7 +234,9 @@ export function ScrollOverlay({ progress }: { progress: number }) {
           }}>
             {SECTION_COMPONENTS.map((Section, i) => (
               <div key={i} ref={el => { sectionRefs.current[i] = el }} style={{ scrollSnapAlign: 'start' }}>
-                <Section />
+                <Suspense fallback={null}>
+                  <Section />
+                </Suspense>
               </div>
             ))}
           </div>
