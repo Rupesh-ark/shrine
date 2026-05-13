@@ -1,6 +1,6 @@
-# Rupesh Pandey
+# shrine
 
-A 3D immersive portfolio built as a scroll-driven cinematic experience. Navigate through a Japanese-inspired night scene — from outside a shrine, through the doors, and into a world of projects, skills, and stories.
+A 3D immersive portfolio built as a scroll-driven cinematic experience. Navigate through a Japanese-inspired night scene, from outside a shrine, through the doors, and into a world of projects, skills, and stories.
 
 [Live Site](https://rupeshpandey.com)
 
@@ -10,7 +10,7 @@ A 3D immersive portfolio built as a scroll-driven cinematic experience. Navigate
 
 - **React 19** + **TypeScript** + **Vite**
 - **Three.js** via **React Three Fiber** (R3F) + **Drei**
-- **Postprocessing** (Bloom, Vignette, Film Noise)
+- **Postprocessing** (Bloom, Vignette)
 - **GLTF / Draco** compressed 3D models
 - Custom GLSL shaders for starfield, spirits, and atmosphere
 
@@ -35,11 +35,6 @@ src/
 
 ### Scroll-Driven Camera
 The camera moves from an orthographic-like intro view through the shrine doors and into an interior focus — all driven by scroll position with smooth easing and breathing motion.
-
-### GPU-Atmosphere
-- **BlueSpirits**: 44 floating spirits rendered as a single `THREE.Points` batch with custom vertex/fragment shaders
-- **Starfield**: 12,000 procedurally placed stars with spectral color distribution (O-M types), twinkle animation, and diffraction spikes — all on GPU
-- **Nebula**: Real-time FBM noise background sphere, zero textures
 
 ### Performance Optimizations
 - DPR capped at `[1, 1.5]`
@@ -68,12 +63,6 @@ pnpm run preview
 
 - `house.glb` — Japanese shrine (Draco compressed)
 - `table_with_cusions.glb` — Interior table set
-- `piano.mp3` — Background ambient music
-- `flame.png` — Spirit particle texture
-
-## Customization
-
-The scroll journey is controlled via `useScrollProgress(800)` where `800` is the total scroll distance in viewport heights. Camera keyframes are defined in `useCameraAnimation.ts` with smoothstep transitions at progress intervals.
 
 ## License
 
