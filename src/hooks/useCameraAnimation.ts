@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useDevOrbitRef } from '../devtools'
 
 const OUTSIDE_Z = 3.0
 const MOBILE_OUTSIDE_Z = 3.5
@@ -36,6 +37,7 @@ function blendProjectionMatrices(
 export function useCameraAnimation(progressRef: React.RefObject<number>, entered?: boolean) {
   const [houseBounds, setHouseBounds] = useState<THREE.Box3 | null>(null)
   const scrollFocusRef = useRef<THREE.Vector3 | null>(null)
+  const orbitRef = useDevOrbitRef()
   const orthoProjectionRef = useRef(new THREE.Matrix4())
   const perspectiveProjectionRef = useRef(new THREE.Matrix4())
   const blendedProjectionRef = useRef(new THREE.Matrix4())
@@ -87,7 +89,7 @@ export function useCameraAnimation(progressRef: React.RefObject<number>, entered
 
   useFrame((state, delta) => {
     if (!entered) return
-    if ((window as unknown as Record<string, unknown>).__debugOrbit) return
+    if (orbitRef.current) return
 
     timeRef.current += delta
     const progress = progressRef.current

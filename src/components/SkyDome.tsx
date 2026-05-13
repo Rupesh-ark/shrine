@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { seededRandom } from '../utils/random'
+import { get2dContext } from '../utils/canvas'
 
 
 /* ── Sky gradient shader ── */
@@ -80,7 +81,7 @@ function getVignetteTexture() {
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
-  const ctx = canvas.getContext('2d')!
+  const ctx = get2dContext(canvas)
   const cx = size / 2
   const cy = size / 2
   const grad = ctx.createRadialGradient(cx, cy, size * 0.32, cx, cy, size * 0.48)

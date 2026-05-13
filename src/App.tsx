@@ -1,12 +1,12 @@
 import { lazy, startTransition, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useScrollProgress } from './hooks/useScrollProgress'
 import { HeroOverlay } from './components/HeroOverlay'
-import { ProgressOverlay } from './components/ProgressOverlay'
 import { MusicOverlay } from './components/MusicOverlay'
 import { EntryGate } from './components/EntryGate'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { GRAIN_URL } from './constants/grain'
-import { useIsMobile } from './hooks/useIsMobile'
+import { useIsMobile } from './hooks/useMobile'
+import { DevOverlay } from './devtools'
 
 const CanvasScene = lazy(() => import('./components/CanvasScene'))
 const ScrollOverlay = lazy(() =>
@@ -40,6 +40,9 @@ function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserR
   })
 }
 
+const MOBILE_SCROLL_VH = 500
+const DESKTOP_SCROLL_VH = 800
+
 export function App() {
   const [muted, setMuted] = useState(false)
   const [entered, setEntered] = useState(false)
@@ -47,8 +50,8 @@ export function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const audioStartedRef = useRef(false)
-  const progress = useScrollProgress(800)
   const isMobile = useIsMobile()
+  const progress = useScrollProgress(isMobile ? MOBILE_SCROLL_VH : DESKTOP_SCROLL_VH)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--fade-bottom', String(1 - Math.min(1, progress / 0.12)))
@@ -143,7 +146,7 @@ export function App() {
         />
       )}
       <HeroOverlay />
-      {import.meta.env.DEV && <ProgressOverlay />}
+      <DevOverlay />
       <Suspense fallback={null}>
         {entered ? <ScrollOverlay /> : null}
       </Suspense>

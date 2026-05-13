@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useIsMobile } from '../hooks/useIsMobile'
+import { useIsMobile } from '../hooks/useMobile'
 import { useScrollProgress } from '../hooks/useScrollProgress'
 
 export function HeroOverlay() {

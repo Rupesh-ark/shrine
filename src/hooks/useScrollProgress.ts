@@ -8,52 +8,61 @@ let _initialized = false
 const _listeners = new Set<Listener>()
 let _rafId = 0
 let _cachedScrollHeight = 0
+let _lastScrollHeightVh = 0
 
 function _notify() {
   for (const fn of _listeners) fn()
 }
 
-function _init(scrollHeightVh: number) {
-  if (_initialized) return
-  _initialized = true
+function _readMaxScroll() {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+  _cachedScrollHeight = maxScroll
+  return maxScroll
+}
 
+function _updateProgress() {
+  const maxScroll = _cachedScrollHeight || _readMaxScroll()
+  if (maxScroll <= 0) {
+    _progress = 0
+    _notify()
+    return
+  }
+  const p = window.scrollY / maxScroll
+  _progress = Math.min(1, Math.max(0, p))
+  _notify()
+}
+
+function _scheduleUpdate() {
+  if (_rafId) return
+  _rafId = requestAnimationFrame(() => {
+    _rafId = 0
+    _updateProgress()
+  })
+}
+
+function _handleViewportChange() {
+  _cachedScrollHeight = 0
+  _scheduleUpdate()
+}
+
+function _init(scrollHeightVh: number) {
+  if (_initialized && _lastScrollHeightVh === scrollHeightVh) return
+
+  _lastScrollHeightVh = scrollHeightVh
   document.body.style.height = `${String(scrollHeightVh)}vh`
 
-  const readMaxScroll = () => {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-    _cachedScrollHeight = maxScroll
-    return maxScroll
-  }
-
-  const updateProgress = () => {
-    const maxScroll = _cachedScrollHeight || readMaxScroll()
-    if (maxScroll <= 0) {
-      _progress = 0
-      _notify()
-      return
-    }
-    const p = window.scrollY / maxScroll
-    _progress = Math.min(1, Math.max(0, p))
-    _notify()
-  }
-
-  const scheduleUpdate = () => {
-    if (_rafId) return
-    _rafId = requestAnimationFrame(() => {
-      _rafId = 0
-      updateProgress()
-    })
-  }
-
-  const handleViewportChange = () => {
+  if (_initialized) {
     _cachedScrollHeight = 0
-    scheduleUpdate()
+    _scheduleUpdate()
+    return
   }
 
-  window.addEventListener('scroll', scheduleUpdate, { passive: true })
-  window.addEventListener('resize', handleViewportChange)
-  window.addEventListener('orientationchange', handleViewportChange)
-  scheduleUpdate()
+  _initialized = true
+
+  window.addEventListener('scroll', _scheduleUpdate, { passive: true })
+  window.addEventListener('resize', _handleViewportChange)
+  window.addEventListener('orientationchange', _handleViewportChange)
+  _scheduleUpdate()
 }
 
 export function useScrollProgress(scrollHeightVh = 400): number {

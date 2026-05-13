@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import type { QualityTier } from './useMobile'
+import { MobileContext } from './useMobile'
 
 const MOBILE_QUERY = '(max-width: 767px)'
 
@@ -7,20 +9,7 @@ function getIsMobile() {
   return window.matchMedia(MOBILE_QUERY).matches
 }
 
-export interface QualityTier {
-  level: 'high' | 'medium' | 'low'
-  starCount: number
-  particleCount: number
-  bambooDensity: number
-  terrainSegments: [number, number, number]
-  contactShadows: boolean
-  bloom: boolean
-  bloomIntensity: number
-  maxPointLights: number
-  screenFps: number
-  mistLayers: number
-  redSpirits: boolean
-}
+export type { QualityTier }
 
 const HIGH_QUALITY: QualityTier = {
   level: 'high',
@@ -83,13 +72,6 @@ function detectTier(isMobile: boolean): QualityTier {
 
 export const DEFAULT_QUALITY: QualityTier = HIGH_QUALITY
 
-interface MobileContextValue {
-  isMobile: boolean
-  quality: QualityTier
-}
-
-const MobileContext = createContext<MobileContextValue | null>(null)
-
 export function MobileProvider({ children }: { children: ReactNode }) {
   const [isMobile, setIsMobile] = useState(getIsMobile)
   const [quality] = useState(() => detectTier(getIsMobile()))
@@ -108,14 +90,3 @@ export function MobileProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useIsMobile() {
-  const ctx = useContext(MobileContext)
-  if (!ctx) throw new Error('useIsMobile must be used within <MobileProvider>')
-  return ctx.isMobile
-}
-
-export function useQuality() {
-  const ctx = useContext(MobileContext)
-  if (!ctx) throw new Error('useQuality must be used within <MobileProvider>')
-  return ctx.quality
-}

@@ -3,7 +3,7 @@ import { INK_BLACK, MEDIUM_WOOD } from '../../constants/colors'
 import { SectionHeader } from '../scroll/SectionHeader'
 import { memo } from 'react'
 import { EDUCATION } from './data'
-import { useIsMobile } from '../../hooks/useIsMobile'
+import { useIsMobile } from '../../hooks/useMobile'
 
 export const EducationSection = memo(function EducationSection() {
   const isMobile = useIsMobile()

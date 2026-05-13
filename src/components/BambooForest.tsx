@@ -157,8 +157,8 @@ export function BambooForest({ active = true, visible = true, quality }: BambooF
       group.add(mesh)
     }
 
+    const g = groupRef.current
     return () => {
-      const g = groupRef.current
       for (const mesh of meshes) {
         mesh.dispose()
         if (g) g.remove(mesh)

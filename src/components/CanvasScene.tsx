@@ -1,11 +1,12 @@
-import { memo, useEffect, useState } from 'react'
+import { memo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { AdaptiveDpr, AdaptiveEvents, OrbitControls, PerformanceMonitor, Preload } from '@react-three/drei'
 import { Scene } from './Scene'
 import { PostProcessing } from './PostProcessing'
 import type { SceneProps } from '../types'
-import { useIsMobile, useQuality } from '../hooks/useIsMobile'
+import { useIsMobile, useQuality } from '../hooks/useMobile'
+import { useDevKeyboard } from '../devtools'
 
 function getCamera(isMobile: boolean) {
   return {
@@ -16,29 +17,10 @@ function getCamera(isMobile: boolean) {
 
 function CanvasScene({ onHouseReady, entered }: SceneProps) {
   const [dpr, setDpr] = useState(1.5)
-  const [orbitEnabled, setOrbitEnabled] = useState(false)
-  const [postEnabled, setPostEnabled] = useState(true)
   const isMobile = useIsMobile()
   const quality = useQuality()
   const camera = getCamera(isMobile)
-
-  useEffect(() => {
-    if (!import.meta.env.DEV) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && e.key === 'O') {
-        setOrbitEnabled(prev => {
-          const next = !prev
-          ;(window as unknown as Record<string, unknown>).__debugOrbit = next
-          return next
-        })
-      }
-      if (e.shiftKey && e.key === 'P') {
-        setPostEnabled(prev => !prev)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  const { orbitEnabled, postEnabled } = useDevKeyboard()
 
   return (
     <Canvas

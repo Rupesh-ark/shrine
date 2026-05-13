@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { useIsMobile } from '../hooks/useIsMobile'
+import { useIsMobile } from '../hooks/useMobile'
 import { useScrollProgress } from '../hooks/useScrollProgress'
 
 function useFps() {

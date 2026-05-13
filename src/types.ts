@@ -1,6 +1,7 @@
 import type { Box3, Vector3 } from 'three'
 import type { Mesh } from 'three'
 import type { RefObject } from 'react'
+import type { QualityTier } from './hooks/useIsMobile'
 
 export interface HouseModelProps {
   onBounds?: (bounds: Box3) => void
@@ -84,8 +85,6 @@ export interface SceneProps {
   entered?: boolean
   quality?: QualityTier
 }
-
-export type QualityTier = import('./hooks/useIsMobile').QualityTier  // eslint-disable-line @typescript-eslint/consistent-type-imports
 
 // Hook types
 export interface ShootingState {

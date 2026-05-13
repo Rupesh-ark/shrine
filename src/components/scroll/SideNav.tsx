@@ -1,6 +1,6 @@
 import { JP_SERIF } from '../../constants/fonts'
 import type { ScrollSection } from '../../types'
-import { useIsMobile } from '../../hooks/useIsMobile'
+import { useIsMobile } from '../../hooks/useMobile'
 
 interface SideNavProps {
   activeIndex: number

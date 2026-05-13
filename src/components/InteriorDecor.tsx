@@ -244,7 +244,7 @@ function InteriorDecorInner({ floorY, centerZ, progressRef }: InteriorDecorProps
         </mesh>
         {/* Handle wrap diamonds */}
         {[-0.05, 0, 0.05].map((dx, i) => (
-          <mesh key={`wrap-${i}`} position={[-0.54 + dx, 0.165, 0]}>
+          <mesh key={`wrap-${String(i)}`} position={[-0.54 + dx, 0.165, 0]}>
             <boxGeometry args={[0.025, 0.02, 0.023]} />
             <meshStandardMaterial color="#8B6914" roughness={0.3} metalness={0.7} />
           </mesh>
