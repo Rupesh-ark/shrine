@@ -2,9 +2,7 @@
 
 A 3D immersive portfolio built as a scroll-driven cinematic experience. Navigate through a Japanese-inspired night scene, from outside a shrine, through the doors, and into a world of projects, skills, and stories.
 
-[Live Site](https://rupeshpandey.com)
-
-![Portfolio Preview](https://rupeshpandey.com/preview.jpg)
+[Live Site](https://rupeshpandey.dev)
 
 ## Tech Stack
 
