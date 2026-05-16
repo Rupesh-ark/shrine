@@ -24,6 +24,7 @@ const HIGH_QUALITY: QualityTier = {
   screenFps: 15,
   mistLayers: 2,
   redSpirits: true,
+  grassDensity: 1,
 }
 
 const MEDIUM_QUALITY: QualityTier = {
@@ -39,6 +40,7 @@ const MEDIUM_QUALITY: QualityTier = {
   screenFps: 12,
   mistLayers: 2,
   redSpirits: true,
+  grassDensity: 0.5,
 }
 
 const LOW_QUALITY: QualityTier = {
@@ -54,6 +56,7 @@ const LOW_QUALITY: QualityTier = {
   screenFps: 10,
   mistLayers: 1,
   redSpirits: false,
+  grassDensity: 0.25,
 }
 
 function detectTier(isMobile: boolean): QualityTier {

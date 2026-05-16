@@ -10,6 +10,7 @@ import { ShaderPrecompiler } from './ShaderPrecompiler'
 import { SkyDome } from './SkyDome'
 import { FallingParticles } from './Particles'
 import { GravelGround } from './GravelGround'
+import { GrassField } from './GrassField'
 import { SceneLighting } from './SceneLighting'
 import { DEFAULT_QUALITY } from '../hooks/useIsMobile'
 import type { QualityTier } from '../hooks/useIsMobile'
@@ -39,6 +40,7 @@ export function Scene({ onHouseReady, entered, quality = DEFAULT_QUALITY }: Scen
       <SceneLighting quality={quality} />
       <SkyDome progressRef={progressRef} />
       <GravelGround />
+      <GrassField />
 
       <Suspense fallback={null}>
         <HouseModel onBounds={handleBounds} onScrollFocus={handleScrollFocus} progressRef={progressRef} onReady={handleModelReady} maxPointLights={quality.maxPointLights} showRedSpirits={quality.redSpirits} />

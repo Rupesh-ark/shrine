@@ -6,6 +6,7 @@ import { EntryGate } from './components/EntryGate'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { GRAIN_URL } from './constants/grain'
 import { useIsMobile } from './hooks/useMobile'
+import { setAudioAnalyser } from './hooks/useAudioAnalyser'
 import { DevOverlay } from './devtools'
 
 const CanvasScene = lazy(() => import('./components/CanvasScene'))
@@ -34,6 +35,7 @@ function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserR
   source.connect(analyser)
   analyser.connect(ctx.destination)
   analyserRef.current = analyser
+  setAudioAnalyser(analyser)
 
   audio.play().catch(() => {
     console.warn('Audio autoplay blocked — user interaction required')

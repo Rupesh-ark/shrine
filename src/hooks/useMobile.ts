@@ -13,6 +13,7 @@ export interface QualityTier {
   screenFps: number
   mistLayers: number
   redSpirits: boolean
+  grassDensity: number
 }
 
 interface MobileContextValue {

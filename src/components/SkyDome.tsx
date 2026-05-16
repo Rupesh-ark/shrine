@@ -131,7 +131,7 @@ const STAR_FRAGMENT = `
 
 /* ── Star data generation ── */
 
-const STAR_COUNT = 180
+const STAR_COUNT = 1000
 const STAR_RADIUS = 27
 const MOON_DIST = 20
 const MOON_THETA = 1.38
@@ -148,9 +148,9 @@ function generateStarData() {
   const speeds = new Float32Array(STAR_COUNT)
 
   for (let i = 0; i < STAR_COUNT; i++) {
-    let theta = MOON_THETA + (rng() - 0.5) * 0.35
-    if (theta > 1.48) theta = 1.44 + rng() * 0.04
-    if (theta < 0.8) theta = 0.8 + rng() * 0.04
+    let theta = MOON_THETA + (rng() - 0.5) * 0.55
+    if (theta > 3) theta = 2 + rng() * 0.04
+    if (theta < 1) theta = 1 + rng() * 0.04
     const phi = MOON_PHI + (rng() - 0.5) * phiSpread
 
     positions[i * 3] = STAR_RADIUS * Math.sin(theta) * Math.cos(phi)
