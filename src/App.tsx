@@ -56,7 +56,6 @@ export function App() {
   const progress = useScrollProgress(isMobile ? MOBILE_SCROLL_VH : DESKTOP_SCROLL_VH)
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--fade-bottom', String(1 - Math.min(1, progress / 0.12)))
     document.documentElement.style.setProperty('--fade-vignette', String(Math.max(0, 1 - progress / 0.22)))
   }, [progress])
 
@@ -115,21 +114,7 @@ export function App() {
         }}
       />
 
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: '28vh',
-          pointerEvents: 'none',
-          zIndex: 4,
-          opacity: 'var(--fade-bottom)',
-          background: 'linear-gradient(to top, #111625 0%, #111625 35%, transparent 100%)',
-          transition: 'opacity 0.1s linear',
-        }}
-      />
+
       {/* Mobile corner vignette — softens house edges during ortho phase */}
       {isMobile && (
         <div
