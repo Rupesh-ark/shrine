@@ -7,8 +7,8 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ kanji, english }: SectionHeaderProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '32px', justifyContent: 'center' }}>
-      <div style={{ height: '1px', width: '60px', background: 'linear-gradient(to right, transparent, #8B6914)' }} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(10px, 1.8vw, 18px)', marginBottom: 'clamp(24px, 3.5vw, 42px)', justifyContent: 'center' }}>
+      <div style={{ height: '1px', width: 'clamp(32px, 6vw, 140px)', background: 'linear-gradient(to right, transparent, #8B6914)' }} />
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
         <span style={{
           fontFamily: JP_SERIF,
@@ -28,7 +28,7 @@ export function SectionHeader({ kanji, english }: SectionHeaderProps) {
           lineHeight: 1,
         }}>{english}</h2>
       </div>
-      <div style={{ height: '1px', width: '60px', background: 'linear-gradient(to left, transparent, #8B6914)' }} />
+      <div style={{ height: '1px', width: 'clamp(32px, 6vw, 140px)', background: 'linear-gradient(to left, transparent, #8B6914)' }} />
     </div>
   )
 }

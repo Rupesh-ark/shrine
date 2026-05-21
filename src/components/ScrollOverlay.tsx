@@ -193,7 +193,7 @@ export function ScrollOverlay() {
 
       {/* Main scroll */}
       <div style={{
-        width: 'min(92vw, 720px)',
+        width: 'min(95vw, 1280px)',
         height: 'min(92vh, 1100px)',
         display: 'flex', flexDirection: 'column',
         ...isFullyRevealed
@@ -244,7 +244,7 @@ export function ScrollOverlay() {
           <div style={{
             position: 'relative',
             zIndex: 3,
-            padding: '0 clamp(16px, 5vw, 40px)',
+            padding: '0 clamp(28px, 4vw, 72px)',
           }}>
             {SECTION_COMPONENTS.map((Section, i) => (
               <div key={i} ref={el => { sectionRefs.current[i] = el }} style={{ scrollSnapAlign: 'start' }}>

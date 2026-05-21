@@ -17,7 +17,7 @@ export const SkillsSection = memo(function SkillsSection() {
     }}>
       <SectionHeader kanji="技術" english="Skills" />
 
-      <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
+      <div style={{ maxWidth: 'clamp(320px, 58vw, 560px)', margin: '0 auto', textAlign: 'center' }}>
         <p style={{
           fontFamily: SERIF, fontStyle: 'italic',
           fontSize: '13px', color: DARK_WOOD, marginBottom: '24px', opacity: 0.7, letterSpacing: '1px',

@@ -16,7 +16,7 @@ export const EducationSection = memo(function EducationSection() {
       padding: isMobile ? '18px 14px' : '24px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="学歴" english="Education" />
-      <div style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}>
+      <div style={{ maxWidth: isMobile ? 'clamp(320px, 60vw, 600px)' : 'clamp(860px, 82vw, 1240px)', margin: '0 auto', width: '100%' }}>
         {EDUCATION.map((ed, i) => (
           <div key={i} style={{
             display: 'flex',
@@ -43,6 +43,25 @@ export const EducationSection = memo(function EducationSection() {
             }}>{ed.place} · {ed.year}</span>
           </div>
         ))}
+        {!isMobile && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+            gap: '16px',
+            marginTop: '28px',
+          }}>
+            {[
+              { label: 'Mode', value: 'Hands-on + theory' },
+              { label: 'Goal', value: 'Build things that ship' },
+              { label: 'Approach', value: 'Learn, then simplify' },
+            ].map((item) => (
+              <div key={item.label} style={{ padding: '14px 16px', background: 'rgba(255,248,235,0.45)', border: '1px solid rgba(139,26,26,0.1)' }}>
+                <p style={{ fontFamily: SERIF, fontSize: '11px', color: '#8B1A1A', letterSpacing: '3px', margin: '0 0 8px', textTransform: 'uppercase' }}>{item.label}</p>
+                <p style={{ fontFamily: SERIF, fontSize: 'clamp(13px, 1.1vw, 15px)', color: INK_BLACK, margin: 0, lineHeight: 1.45 }}>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

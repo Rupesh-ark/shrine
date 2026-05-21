@@ -3,8 +3,11 @@ import { CRIMSON, INK_BLACK, DEEP_BROWN, MEDIUM_WOOD } from '../../constants/col
 import { SectionHeader } from '../scroll/SectionHeader'
 import { memo } from 'react'
 import { PROJECTS } from './data'
+import { useIsMobile } from '../../hooks/useMobile'
 
 export const ProjectsSection = memo(function ProjectsSection() {
+  const isMobile = useIsMobile()
+
   return (
     <section style={{
       minHeight: '100%',
@@ -13,7 +16,8 @@ export const ProjectsSection = memo(function ProjectsSection() {
       padding: '24px clamp(16px, 5vw, 40px)',
     }}>
       <SectionHeader kanji="作品" english="Projects" />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', maxWidth: '560px', margin: '0 auto' }}>
+      {isMobile ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', maxWidth: 'clamp(340px, 62vw, 620px)', margin: '0 auto' }}>
         {PROJECTS.map((proj, i) => (
           <div key={proj.name} style={{ position: 'relative' }}>
             {/* Decorative brush-stroke rule */}
@@ -104,6 +108,48 @@ export const ProjectsSection = memo(function ProjectsSection() {
           </div>
         ))}
       </div>
+      ) : (
+      <div style={{
+        width: '100%',
+        maxWidth: 'clamp(940px, 88vw, 1360px)',
+        margin: '0 auto',
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1.15fr) minmax(360px, 0.85fr)',
+        gap: 'clamp(26px, 4vw, 64px)',
+        alignItems: 'start',
+      }}>
+        <div style={{ display: 'grid', gap: '24px' }}>
+          {PROJECTS.slice(0, 2).map((proj, i) => (
+            <div key={proj.name} style={{ position: 'relative', padding: '18px 20px', background: i === 0 ? 'rgba(255,248,235,0.5)' : 'rgba(92,74,42,0.03)', border: '1px solid rgba(139,26,26,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
+              <div style={{ height: '1px', background: `linear-gradient(to right, rgba(139,26,26,0.35) 0%, rgba(139,26,26,0.08) 60%, transparent 100%)`, marginBottom: '14px', width: i === 0 ? '100%' : '72%' }} />
+              <span style={{ position: 'absolute', top: '14px', right: '18px', fontFamily: 'Noto Serif JP', fontSize: '10px', color: '#8B6914', letterSpacing: '2px', opacity: 0.55 }}>{proj.year}</span>
+              <h3 style={{ fontFamily: DISPLAY, fontSize: 'clamp(17px, 1.6vw, 22px)', color: '#111', fontWeight: '700', margin: '0 0 8px', paddingRight: '42px' }}>
+                {proj.link ? <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ color: '#8B1A1A', textDecoration: 'none', borderBottom: '1px solid rgba(139,26,26,0.25)' }}>{proj.name}</a> : proj.name}
+              </h3>
+              <p style={{ fontFamily: SERIF, fontSize: 'clamp(13px, 1.2vw, 16px)', color: '#3d2e14', lineHeight: 1.65, margin: '0 0 12px' }}>{proj.desc}</p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {proj.tags.map(t => <span key={t} style={{ fontFamily: 'Noto Serif JP, monospace', fontSize: '10px', color: '#8B1A1A', padding: '3px 10px', letterSpacing: '1px', background: 'rgba(139,26,26,0.08)', borderRadius: '2px' }}>{t}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'grid', gap: '24px', alignContent: 'start', position: 'sticky', top: 'clamp(12px, 2vh, 20px)' }}>
+          {PROJECTS.slice(2).map((proj) => (
+            <div key={proj.name} style={{ position: 'relative', padding: '18px 20px', background: 'rgba(255,248,235,0.4)', border: '1px solid rgba(139,26,26,0.1)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
+              <span style={{ position: 'absolute', top: '14px', right: '18px', fontFamily: 'Noto Serif JP', fontSize: '10px', color: '#8B6914', letterSpacing: '2px', opacity: 0.55 }}>{proj.year}</span>
+              <h3 style={{ fontFamily: DISPLAY, fontSize: 'clamp(16px, 1.45vw, 20px)', color: '#111', fontWeight: '700', margin: '0 0 8px', paddingRight: '42px' }}>
+                {proj.link ? <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ color: '#8B1A1A', textDecoration: 'none', borderBottom: '1px solid rgba(139,26,26,0.25)' }}>{proj.name}</a> : proj.name}
+              </h3>
+              <p style={{ fontFamily: SERIF, fontSize: 'clamp(13px, 1.1vw, 15px)', color: '#3d2e14', lineHeight: 1.65, margin: '0 0 12px' }}>{proj.desc}</p>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {proj.tags.map(t => <span key={t} style={{ fontFamily: 'Noto Serif JP, monospace', fontSize: '10px', color: '#8B1A1A', padding: '3px 10px', letterSpacing: '1px', background: 'rgba(139,26,26,0.08)', borderRadius: '2px' }}>{t}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      )}
     </section>
   )
 })
