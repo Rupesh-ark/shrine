@@ -1,6 +1,6 @@
 import { lazy, Suspense, useRef, useState, useEffect, useCallback } from 'react'
 import { GRAIN_URL } from '../constants/grain'
-import { useScrollProgress } from '../hooks/useScrollProgress'
+import { useProgressEffect } from '../hooks/useScrollProgress'
 import type { ScrollSection } from '../types'
 import { WoodBar } from './scroll/WoodBar'
 import { SideNav } from './scroll/SideNav'
@@ -34,22 +34,36 @@ const SECTION_COMPONENTS = [
   ContactSection,
 ]
 
+const REVEAL_START = 0.88
+const REVEAL_END = 1
+
 export function ScrollOverlay() {
-  const progress = useScrollProgress()
-  const revealStart = 0.88
-  const revealEnd = 1
-  const revealProgress = Math.min(1, Math.max(0, (progress - revealStart) / (revealEnd - revealStart)))
   const activationRef = useRef(false)
   const [overlayActivated, setOverlayActivated] = useState(false)
+  const [revealState, setRevealState] = useState<{ visible: boolean; progress: number }>({ visible: false, progress: 0 })
+
+  useProgressEffect(undefined, (p) => {
+    const visible = p >= 0.85
+    const rp = activationRef.current
+      ? 1
+      : Math.min(1, Math.max(0, (p - REVEAL_START) / (REVEAL_END - REVEAL_START)))
+
+    setRevealState(prev => {
+      if (!prev.visible && !visible) return prev
+      if (prev.visible === visible && prev.progress === rp) return prev
+      return { visible, progress: rp }
+    })
+  })
+
+  const revealProgress = overlayActivated ? 1 : revealState.progress
+  const isVisible = revealState.visible
+  const isFullyRevealed = revealProgress >= 1
+
   const activateOverlay = useCallback(() => {
     if (activationRef.current) return
     activationRef.current = true
     setOverlayActivated(true)
   }, [])
-
-  const uiRevealProgress = overlayActivated ? 1 : revealProgress
-  const isFullyRevealed = uiRevealProgress >= 1
-  const isVisible = progress >= 0.85
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const thumbRef = useRef<HTMLDivElement>(null)
@@ -143,7 +157,7 @@ export function ScrollOverlay() {
 
   if (!isVisible) return null
 
-  const eased = 1 - Math.pow(1 - uiRevealProgress, 3)
+  const eased = 1 - Math.pow(1 - revealProgress, 3)
   const clipRadius = eased * 145
   const innerScale = 0.88 + eased * 0.12
 
@@ -268,7 +282,7 @@ export function ScrollOverlay() {
           />
         </div>
 
-        {uiRevealProgress > 0.9 && (
+        {revealProgress > 0.9 && (
           <SideNav activeIndex={activeSection} onNavigate={navigateToSection} sections={SECTIONS} />
         )}
 

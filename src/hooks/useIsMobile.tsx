@@ -14,7 +14,7 @@ export type { QualityTier }
 const HIGH_QUALITY: QualityTier = {
   level: 'high',
   starCount: 12000,
-  particleCount: 180,
+  particleCount: 300,
   bambooDensity: 1,
   terrainSegments: [100, 80, 64],
   contactShadows: true,
@@ -30,7 +30,7 @@ const HIGH_QUALITY: QualityTier = {
 const MEDIUM_QUALITY: QualityTier = {
   level: 'medium',
   starCount: 6000,
-  particleCount: 90,
+  particleCount: 150,
   bambooDensity: 0.5,
   terrainSegments: [60, 48, 40],
   contactShadows: true,
@@ -46,7 +46,7 @@ const MEDIUM_QUALITY: QualityTier = {
 const LOW_QUALITY: QualityTier = {
   level: 'low',
   starCount: 3000,
-  particleCount: 45,
+  particleCount: 80,
   bambooDensity: 0.25,
   terrainSegments: [40, 32, 24],
   contactShadows: false,

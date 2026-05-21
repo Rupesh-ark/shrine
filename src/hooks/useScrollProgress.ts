@@ -88,3 +88,22 @@ export function useProgressRef() {
 
   return ref
 }
+
+export function useProgressEffect(
+  scrollHeightVh: number | undefined,
+  callback: (progress: number) => void,
+): void {
+  if (scrollHeightVh !== undefined) _init(scrollHeightVh)
+  const callbackRef = useRef(callback)
+
+  useEffect(() => {
+    callbackRef.current = callback
+  })
+
+  useEffect(() => {
+    const sync = () => { callbackRef.current(_progress) }
+    _listeners.add(sync)
+    sync()
+    return () => { _listeners.delete(sync) }
+  }, [])
+}

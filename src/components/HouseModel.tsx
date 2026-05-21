@@ -313,19 +313,7 @@ function animateScreenParticles(
     ctx.fillRect(0, 0, w, h)
   }
 
-  // Faint paper grain
-  ctx.globalAlpha = 0.06
-  ctx.strokeStyle = '#4a2828'
-  ctx.lineWidth = 1
-  for (let y = 0; y < h; y += 8) {
-    ctx.beginPath()
-    ctx.moveTo(0, y + Math.sin(y * 0.25) * 2)
-    for (let x = 0; x < w; x += 5) {
-      ctx.lineTo(x, y + Math.sin((x + y) * 0.06) * 2)
-    }
-    ctx.stroke()
-  }
-  ctx.globalAlpha = 1
+  // Paper grain omitted during animation — barely visible at 6% opacity, expensive to draw
 
   // Falling sakura petals
   for (const p of particles) {
@@ -787,9 +775,9 @@ export function HouseModel({
     const sealTexture = sealTextureRef.current
     if (!canvas || !texture || particles.length === 0 || progress >= 0.82) return
 
-    // Throttle 2D canvas animation to ~15 FPS to reduce main-thread pressure
+    // Throttle 2D canvas animation to ~5 FPS to reduce main-thread pressure
     const now = performance.now()
-    if (now - lastScreenUpdateRef.current < 100) return
+    if (now - lastScreenUpdateRef.current < 200) return
     lastScreenUpdateRef.current = now
 
     animateScreenParticles(particles, state.clock.elapsedTime, canvas, texture, openProgress, openProgress)

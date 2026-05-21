@@ -1,25 +1,35 @@
-import { useMemo } from 'react'
+import { useRef, useState } from 'react'
 import { useIsMobile } from '../hooks/useMobile'
-import { useScrollProgress } from '../hooks/useScrollProgress'
+import { useProgressEffect } from '../hooks/useScrollProgress'
 
 export function HeroOverlay() {
-  const progress = useScrollProgress()
-  const fade = useMemo(() => {
-    if (progress < 0.02) return 1
-    if (progress > 0.18) return 0
-    return 1 - (progress - 0.02) / (0.18 - 0.02)
-  }, [progress])
-
-  const lift = useMemo(() => {
-    if (progress < 0.02) return 0
-    if (progress > 0.18) return -24
-    return -((progress - 0.02) / (0.18 - 0.02)) * 24
-  }, [progress])
-
   const isMobile = useIsMobile()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(true)
+
+  useProgressEffect(undefined, (p) => {
+    if (!visible) return
+    const el = containerRef.current
+    if (!el) return
+
+    if (p > 0.2) {
+      setVisible(false)
+      return
+    }
+
+    const fade = p < 0.02 ? 1 : p > 0.18 ? 0 : 1 - (p - 0.02) / 0.16
+    const lift = p < 0.02 ? 0 : p > 0.18 ? -24 : -((p - 0.02) / 0.16) * 24
+
+    el.style.opacity = String(fade)
+    el.style.transform = `translateY(${String(lift)}px)`
+    el.style.pointerEvents = fade < 0.1 ? 'none' : 'auto'
+  })
+
+  if (!visible) return null
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: 'fixed',
         inset: 0,
@@ -31,10 +41,6 @@ export function HeroOverlay() {
         paddingTop: isMobile ? 'clamp(44px, 8vh, 76px)' : 'clamp(72px, 12vh, 150px)',
         paddingLeft: isMobile ? '20px' : '0',
         paddingRight: isMobile ? '20px' : '0',
-        pointerEvents: fade < 0.1 ? 'none' : 'auto',
-        opacity: fade,
-        transform: `translateY(${String(lift)}px)`,
-        transition: 'opacity 0.1s linear',
       }}
     >
       <div

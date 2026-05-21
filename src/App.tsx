@@ -1,5 +1,5 @@
 import { lazy, startTransition, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { useScrollProgress } from './hooks/useScrollProgress'
+import { useProgressEffect } from './hooks/useScrollProgress'
 import { HeroOverlay } from './components/HeroOverlay'
 import { MusicOverlay } from './components/MusicOverlay'
 import { EntryGate } from './components/EntryGate'
@@ -53,11 +53,10 @@ export function App() {
   const analyserRef = useRef<AnalyserNode | null>(null)
   const audioStartedRef = useRef(false)
   const isMobile = useIsMobile()
-  const progress = useScrollProgress(isMobile ? MOBILE_SCROLL_VH : DESKTOP_SCROLL_VH)
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--fade-vignette', String(Math.max(0, 1 - progress / 0.22)))
-  }, [progress])
+  useProgressEffect(isMobile ? MOBILE_SCROLL_VH : DESKTOP_SCROLL_VH, (p) => {
+    document.documentElement.style.setProperty('--fade-vignette', String(Math.max(0, 1 - p / 0.22)))
+  })
 
   useEffect(() => {
     if (entered) {

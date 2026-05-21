@@ -193,69 +193,68 @@ function createRedGlowTexture(): THREE.CanvasTexture {
 
 const redGlowTexture = createRedGlowTexture()
 
-function RedFlameSprite({ position, active }: { position: THREE.Vector3; active: boolean }) {
-  const spriteRef = useRef<THREE.Sprite>(null)
-  const lightRef = useRef<THREE.PointLight>(null)
-
-  const data = useMemo(
-    () => ({
-      basePosition: position.clone(),
-      speed:
-        0.6 +
-        seededRandom(Math.floor((position.x * 13 + position.y * 17 + position.z * 19) * 1000))() *
-          0.8,
-      phase:
-        seededRandom(Math.floor((position.x * 23 + position.y * 29 + position.z * 31) * 1000))() *
-        Math.PI *
-        2,
-      scale:
-        0.18 +
-        seededRandom(Math.floor((position.x * 37 + position.y * 41 + position.z * 43) * 1000))() *
-          0.12,
-    }),
-    [position],
-  )
-
-  useFrame((state) => {
-    if (!active) return
-    if (!spriteRef.current || !lightRef.current) return
-    const t = state.clock.elapsedTime
-
-    const glowY = Math.sin(t * data.speed * 0.45 + data.phase) * 0.15
-    const glowX = Math.sin(t * 0.28 + data.phase) * 0.2
-    const glowZ = Math.cos(t * 0.24 + data.phase) * 0.18
-
-    spriteRef.current.position.set(glowX, glowY, glowZ)
-    lightRef.current.position.set(glowX, glowY, glowZ)
-
-    const flicker =
-      1 + Math.sin(t * 7 + data.phase) * 0.18 + Math.sin(t * 11 + data.phase * 1.3) * 0.06
-    spriteRef.current.scale.setScalar(data.scale * flicker * 2.4)
-
-    lightRef.current.intensity = 3.4 + Math.sin(t * 6 + data.phase) * 0.95
-  })
-
-  return (
-    <group position={[data.basePosition.x, data.basePosition.y, data.basePosition.z]} visible={active}>
-      <sprite ref={spriteRef}>
-        <spriteMaterial
-          map={redGlowTexture}
-          transparent
-          opacity={0.45}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </sprite>
-      <pointLight ref={lightRef} color="#FF6B35" intensity={3.4} distance={5.5} decay={2} />
-    </group>
-  )
+interface FlameInstanceData {
+  basePosition: THREE.Vector3
+  speed: number
+  phase: number
+  scale: number
 }
 
 export function RedSpirits({ positions, active = true }: RedSpiritsProps & { active?: boolean }) {
+  const spriteRefs = useRef<(THREE.Sprite | null)[]>([])
+  const lightRefs = useRef<(THREE.PointLight | null)[]>([])
+  const flameData = useMemo<FlameInstanceData[]>(() => {
+    const data: FlameInstanceData[] = []
+    for (const pos of positions) {
+      const p = new THREE.Vector3(...pos)
+      data.push({
+        basePosition: p,
+        speed: 0.6 + seededRandom(Math.floor((p.x * 13 + p.y * 17 + p.z * 19) * 1000))() * 0.8,
+        phase: seededRandom(Math.floor((p.x * 23 + p.y * 29 + p.z * 31) * 1000))() * Math.PI * 2,
+        scale: 0.18 + seededRandom(Math.floor((p.x * 37 + p.y * 41 + p.z * 43) * 1000))() * 0.12,
+      })
+    }
+    return data
+  }, [positions])
+
+  useFrame((state) => {
+    if (!active) return
+    const t = state.clock.elapsedTime
+    for (let i = 0; i < flameData.length; i++) {
+      const d = flameData[i]
+      const sprite = spriteRefs.current[i]
+      const light = lightRefs.current[i]
+      if (!sprite || !light) continue
+
+      const glowY = Math.sin(t * d.speed * 0.45 + d.phase) * 0.15
+      const glowX = Math.sin(t * 0.28 + d.phase) * 0.2
+      const glowZ = Math.cos(t * 0.24 + d.phase) * 0.18
+
+      sprite.position.set(glowX, glowY, glowZ)
+      light.position.set(glowX, glowY, glowZ)
+
+      const flicker = 1 + Math.sin(t * 7 + d.phase) * 0.18 + Math.sin(t * 11 + d.phase * 1.3) * 0.06
+      sprite.scale.setScalar(d.scale * flicker * 2.4)
+
+      light.intensity = 3.4 + Math.sin(t * 6 + d.phase) * 0.95
+    }
+  })
+
   return (
     <group visible={active}>
-      {positions.map((pos, i) => (
-        <RedFlameSprite key={`red-flame-${String(i)}`} position={new THREE.Vector3(...pos)} active={active} />
+      {flameData.map((d, i) => (
+        <group key={`red-flame-${String(i)}`} position={[d.basePosition.x, d.basePosition.y, d.basePosition.z]}>
+          <sprite ref={(el) => { spriteRefs.current[i] = el }}>
+            <spriteMaterial
+              map={redGlowTexture}
+              transparent
+              opacity={0.45}
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+            />
+          </sprite>
+          <pointLight ref={(el) => { lightRefs.current[i] = el }} color="#FF6B35" intensity={3.4} distance={5.5} decay={2} />
+        </group>
       ))}
     </group>
   )
