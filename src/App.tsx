@@ -42,8 +42,8 @@ function initAudio(audioRef: React.RefObject<HTMLAudioElement | null>, analyserR
   })
 }
 
-const MOBILE_SCROLL_VH = 500
-const DESKTOP_SCROLL_VH = 800
+const MOBILE_SCROLL_VH = 300
+const DESKTOP_SCROLL_VH = 400
 
 export function App() {
   const [muted, setMuted] = useState(false)
