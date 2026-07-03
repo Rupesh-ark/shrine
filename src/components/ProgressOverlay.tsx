@@ -28,11 +28,11 @@ function useFps() {
   return fps
 }
 
-export function ProgressOverlay() {
+export function ProgressOverlay({ scrollHeightVh }: { scrollHeightVh?: number }) {
   const isMobile = useIsMobile()
   const fps = useFps()
   const rendererStats = useRendererStats()
-  const progress = useScrollProgress()
+  const progress = useScrollProgress(scrollHeightVh)
   const progressLabel = progress.toFixed(3)
 
   const phase = useMemo(() => {

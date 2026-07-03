@@ -81,5 +81,5 @@ export function useDevKeyboard(): { orbitEnabled: boolean; postEnabled: boolean 
 
 export function DevOverlay() {
   if (!import.meta.env.DEV) return null
-  return <ProgressOverlay />
+  return <ProgressOverlay scrollHeightVh={window.innerWidth < 768 ? 300 : 400} />
 }

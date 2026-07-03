@@ -125,6 +125,7 @@ export function ScrollOverlay() {
   }, [activateOverlay, isVisible])
 
   useEffect(() => {
+    if (!isVisible) return
     const el = scrollRef.current
     if (!el) return
     const updateThumb = () => {
@@ -153,7 +154,7 @@ export function ScrollOverlay() {
       el.removeEventListener('scroll', onScroll)
       ro.disconnect()
     }
-  }, [activateOverlay])
+  }, [activateOverlay, isVisible])
 
   if (!isVisible) return null
 
