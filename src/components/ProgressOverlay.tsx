@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { useIsMobile } from '../hooks/useMobile'
 import { useScrollProgress } from '../hooks/useScrollProgress'
+import { useRendererStats } from '../devRendererStats'
 
 function useFps() {
   const [fps, setFps] = useState(0)
@@ -30,6 +31,7 @@ function useFps() {
 export function ProgressOverlay() {
   const isMobile = useIsMobile()
   const fps = useFps()
+  const rendererStats = useRendererStats()
   const progress = useScrollProgress()
   const progressLabel = progress.toFixed(3)
 
@@ -139,6 +141,30 @@ export function ProgressOverlay() {
         >
           {fps} FPS
         </span>
+        <span
+          style={{
+            fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
+            fontSize: isMobile ? '8px' : '9px',
+            letterSpacing: '1px',
+            color: '#C4A77D',
+            opacity: 0.86,
+          }}
+        >
+          {rendererStats.calls} calls · {rendererStats.triangles.toLocaleString()} tris
+        </span>
+        {!isMobile && (
+          <span
+            style={{
+              fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
+              fontSize: '8px',
+              letterSpacing: '1px',
+              color: '#8A9AB0',
+              opacity: 0.78,
+            }}
+          >
+            {rendererStats.geometries} geo · {rendererStats.textures} tex · {rendererStats.programs} programs
+          </span>
+        )}
       </div>
 
       {/* Track */}

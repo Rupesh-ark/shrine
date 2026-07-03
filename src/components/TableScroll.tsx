@@ -7,6 +7,7 @@ const parchmentColor = '#EDE4CC'
 const inkColor = '#1A0F08'
 const sealColor = '#8B1A1A'
 const woodDark = '#2F251D'
+const jpSystemSerif = "'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif"
 
 export const SCROLL_OFFSET_X = 0.01
 export const SCROLL_OFFSET_Z = -0.01
@@ -72,7 +73,7 @@ function createParchmentTex(): THREE.CanvasTexture {
   ctx.fillStyle = inkColor
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.font = "bold 56px 'NinjaKage', 'Noto Serif JP', serif"
+  ctx.font = `bold 56px ${jpSystemSerif}`
   ctx.globalAlpha = 0.8
   ctx.fillText('履 歴 書', w / 2, h * 0.28)
   ctx.globalAlpha = 1
@@ -89,7 +90,7 @@ function createParchmentTex(): THREE.CanvasTexture {
   ctx.lineWidth = 6
   ctx.strokeRect(-26, -26, 52, 52)
   ctx.fillStyle = sealColor
-  ctx.font = "bold 22px 'NinjaKage', 'Noto Serif JP', serif"
+  ctx.font = `bold 22px ${jpSystemSerif}`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText('承認', 0, 2)

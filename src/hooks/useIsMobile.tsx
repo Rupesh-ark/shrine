@@ -62,11 +62,33 @@ const LOW_QUALITY: QualityTier = {
 function detectTier(isMobile: boolean): QualityTier {
   if (typeof window === 'undefined') return HIGH_QUALITY
 
-  const cores: number = navigator.hardwareConcurrency
-  const memory: number = (navigator as unknown as Record<string, unknown>).deviceMemory as number | undefined ?? 4
-  const dpr: number = window.devicePixelRatio
+  const nav = navigator as unknown as { deviceMemory?: number; hardwareConcurrency?: number }
+  const cores = nav.hardwareConcurrency ?? 4
+  const memory = nav.deviceMemory ?? 4
+  const dpr = window.devicePixelRatio
+  const connection = (navigator as unknown as {
+    connection?: {
+      downlink?: number
+      effectiveType?: string
+      rtt?: number
+      saveData?: boolean
+    }
+  }).connection
+  const constrainedNetwork =
+    connection?.saveData === true ||
+    connection?.effectiveType === 'slow-2g' ||
+    connection?.effectiveType === '2g' ||
+    connection?.effectiveType === '3g' ||
+    (connection?.downlink !== undefined && connection.downlink <= 2) ||
+    (connection?.rtt !== undefined && connection.rtt >= 300)
 
-  if (isMobile || cores <= 4 || memory <= 2 || dpr <= 1) {
+  if (constrainedNetwork) return LOW_QUALITY
+
+  if (isMobile) {
+    return cores <= 4 || memory <= 4 || dpr >= 2 ? LOW_QUALITY : MEDIUM_QUALITY
+  }
+
+  if (cores <= 4 || memory <= 2 || dpr <= 1) {
     return cores <= 2 || memory <= 2 ? LOW_QUALITY : MEDIUM_QUALITY
   }
 
@@ -92,4 +114,3 @@ export function MobileProvider({ children }: { children: ReactNode }) {
     </MobileContext.Provider>
   )
 }
-

@@ -13,7 +13,9 @@ export function SideNav({ activeIndex, onNavigate, sections }: SideNavProps) {
   if (isMobile) return null
   return (
     <div style={{
-      position: 'absolute', right: '-64px', top: '50%',
+      position: 'fixed',
+      right: 'clamp(14px, 2vw, 28px)',
+      top: '50%',
       transform: 'translateY(-50%)',
       display: 'flex', flexDirection: 'column', gap: '18px',
       alignItems: 'center',
@@ -24,6 +26,7 @@ export function SideNav({ activeIndex, onNavigate, sections }: SideNavProps) {
       borderRadius: '12px',
       border: '1px solid rgba(139,26,26,0.25)',
       boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+      zIndex: 30,
     }}>
       <div style={{
         position: 'absolute', left: '50%', top: '28px', bottom: '28px',

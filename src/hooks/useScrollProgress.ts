@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useSyncExternalStore } from 'react'
 
 type Listener = () => void
+const useBrowserLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 let _progress = 0
 let _initialized = false
@@ -65,15 +66,25 @@ function _init(scrollHeightVh: number) {
   _scheduleUpdate()
 }
 
+function _getSnapshot() {
+  return _progress
+}
+
+function _getServerSnapshot() {
+  return 0
+}
+
 export function useScrollProgress(scrollHeightVh = 400): number {
-  _init(scrollHeightVh)
+  useBrowserLayoutEffect(() => {
+    _init(scrollHeightVh)
+  }, [scrollHeightVh])
 
   const subscribe = useCallback((listener: Listener) => {
     _listeners.add(listener)
     return () => { _listeners.delete(listener) }
   }, [])
 
-  return useSyncExternalStore(subscribe, () => _progress)
+  return useSyncExternalStore(subscribe, _getSnapshot, _getServerSnapshot)
 }
 
 export function useProgressRef() {
@@ -93,8 +104,11 @@ export function useProgressEffect(
   scrollHeightVh: number | undefined,
   callback: (progress: number) => void,
 ): void {
-  if (scrollHeightVh !== undefined) _init(scrollHeightVh)
   const callbackRef = useRef(callback)
+
+  useBrowserLayoutEffect(() => {
+    if (scrollHeightVh !== undefined) _init(scrollHeightVh)
+  }, [scrollHeightVh])
 
   useEffect(() => {
     callbackRef.current = callback

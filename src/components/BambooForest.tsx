@@ -133,7 +133,7 @@ function buildInstancedMeshes(
 }
 
 export function BambooForest({ active = true, visible = true, quality }: BambooForestProps) {
-  const { scene: loadedScene } = useGLTF(BAMBOO_URL) as GLTF
+  const { scene: loadedScene } = useGLTF(BAMBOO_URL, '/draco/') as GLTF
   const groupRef = useRef<THREE.Group>(null)
   const meshesRef = useRef<THREE.InstancedMesh[]>([])
 

@@ -100,6 +100,7 @@ function getVignetteTexture() {
 
 const STAR_VERTEX = `
   uniform float uTime;
+  uniform float uOpacity;
   uniform float uPixelRatio;
   attribute float aSize;
   attribute float aPhase;
@@ -114,6 +115,7 @@ const STAR_VERTEX = `
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
     gl_PointSize = aSize * uPixelRatio * (180.0 / -mvPosition.z);
+    vAlpha *= uOpacity;
   }
 `
 
